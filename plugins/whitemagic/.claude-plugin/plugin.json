@@ -1,0 +1,12 @@
+{
+  "name": "whitemagic",
+  "description": "Local-first memory and session continuity for coding agents: durable recall over MCP with no cloud service and no telemetry.",
+  "version": "1.0.0",
+  "author": {
+    "name": "WhiteMagic Labs",
+    "email": "whitemagicdev@proton.me"
+  },
+  "homepage": "https://whitemagic.dev",
+  "repository": "https://github.com/lbailey94/whitemagic-plugins",
+  "license": "MIT"
+}

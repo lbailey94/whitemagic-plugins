@@ -1,0 +1,13 @@
+{
+  "name": "whitemagic",
+  "owner": {
+    "name": "WhiteMagic Labs"
+  },
+  "plugins": [
+    {
+      "name": "whitemagic",
+      "source": "./plugins/whitemagic",
+      "description": "Local-first memory and session continuity for coding agents: durable recall over MCP with no cloud service and no telemetry."
+    }
+  ]
+}
