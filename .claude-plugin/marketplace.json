@@ -1,5 +1,6 @@
 {
   "name": "whitemagic",
+  "description": "Claude Code plugins by WhiteMagic Labs — local-first agent memory and session continuity.",
   "owner": {
     "name": "WhiteMagic Labs"
   },
