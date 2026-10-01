@@ -1,5 +1,7 @@
 # WhiteMagic plugins
 
+[![whitemagic.agent](https://dmv.agentcommunity.org/badge?id=UNIT-FA2-46DL)](https://dmv.agentcommunity.org/c/UNIT-FA2-46DL/whitemagic)
+
 Claude Code plugin marketplace for [WhiteMagic](https://whitemagic.dev) —
 local-first memory and session continuity for coding agents. One static Rust
 binary, no cloud service, no telemetry, MIT.
@@ -40,6 +42,22 @@ Continuity Receipt does not require WhiteMagic. Three entrances — **use it** �
 `whitemagic`; **review a protocol** → `continuity-receipt`; **attack the
 security architecture** → `mandalaos-gate-lite`.
 
+## ClawHub (OpenClaw)
+
+`clawhub/whitemagic/` is a ClawHub-publishable skill (AgentSkills `SKILL.md`).
+It teaches OpenClaw agents to wire WhiteMagic and to use recall-first behavior.
+
+```bash
+clawhub login   # browser OIDC
+clawhub skill publish ./clawhub/whitemagic \
+  --slug whitemagic --name "WhiteMagic Memory" \
+  --categories agents,development,knowledge \
+  --topics memory,continuity,mcp,recall,provenance
+```
+
+Wire the local server with `wm setup openclaw --write` (v9.3.1+) or
+`openclaw mcp add whitemagic --command wm --arg serve --arg --profile --arg curated`.
+
 ## Development
 
 ```bash
@@ -56,9 +74,9 @@ claude plugin validate ./plugins/whitemagic --strict
 
 1. Push this repository (the plugin lives at `plugins/whitemagic`).
 2. Validate locally with `claude plugin validate ./plugins/whitemagic --strict`.
-3. Submit via the Console form for individual authors:
-   <https://platform.claude.com/plugins/submit> (claude.ai form requires a
-   Team/Enterprise org).
+3. Submit via the directory portal: <https://claude.ai/directory/manage>
+   (as of 2026-09-25; any paid Claude plan can submit — the old
+   `platform.claude.com/plugins/submit` Console form is retired).
 4. Approved plugins are pinned to a commit SHA in
    `anthropics/claude-plugins-community`; CI bumps the pin on new commits.
 
