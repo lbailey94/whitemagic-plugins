@@ -28,6 +28,38 @@ Requirements: Node.js 18+ (for the `npx` launcher). Prefer a native binary?
 | `.mcp.json` | WhiteMagic MCP server (curated profile) |
 | `skills/whitemagic-recall` | When/how to recall and persist project memory |
 
+## Clients
+
+| Client | Adapter | Install |
+|---|---|---|
+| Claude Code | `plugins/whitemagic` | `/plugin marketplace add lbailey94/whitemagic-plugins` |
+| Cursor | `plugins/cursor` (Cursor plugin: mcp.json + rule + skill) | manual `.cursor/mcp.json` today; marketplace submission pending |
+| OpenClaw | `clawhub/whitemagic` | see the ClawHub section below |
+| Codex CLI | planned | — |
+| Gemini CLI / Antigravity | planned | — |
+| VS Code / GitHub Copilot | planned | — |
+
+### Cursor
+
+Add the server to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json`
+(global), then copy the recall rule into `.cursor/rules/`:
+
+```json
+{
+  "mcpServers": {
+    "whitemagic": {
+      "command": "npx",
+      "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+    }
+  }
+}
+```
+
+The full bundle lives at `plugins/cursor/` (`.cursor-plugin/plugin.json`,
+`mcp.json`, `rules/whitemagic-recall.mdc`,
+`skills/whitemagic-recall/SKILL.md`) and is listed in
+`.cursor-plugin/marketplace.json`. Details: `plugins/cursor/README.md`.
+
 ## The stack
 
 > Local memory → governed execution → verifiable continuity

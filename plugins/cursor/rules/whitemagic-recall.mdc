@@ -1,0 +1,17 @@
+---
+description: Recall durable project memory and session continuity with WhiteMagic before answering state questions; prefer explicit wm routes.
+alwaysApply: false
+---
+
+When this project uses WhiteMagic (the `wm` MCP server):
+
+- Before answering "what do we know / what was decided / where were we", call
+  `wm(route="session.continuity", args={"n": 5})`.
+- Search durable memory with `wm(route="memory.search", args={"query": "..."})`;
+  use `wm(route="memory.hybrid_recall", args={"query": "..."})` for concepts.
+- Persist decisions with
+  `wm(route="memory.create", args={"content": "...", "importance": 0.8, "tags": ["decision"]})`.
+- Prefer explicit `route=` over natural-language routing;
+  `wm(route="tools.list")` discovers the surface.
+- All memory stays local by default; never send memory content to third-party
+  services.
