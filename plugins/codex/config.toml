@@ -1,0 +1,16 @@
+# WhiteMagic for Codex CLI — append to ~/.codex/config.toml
+# (or a trusted project's .codex/config.toml).
+
+[mcp_servers.whitemagic]
+command = "npx"
+args = ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+startup_timeout_sec = 30
+
+# Native binary alternative:
+# [mcp_servers.whitemagic]
+# command = "wm"
+# args = ["serve", "--profile", "curated"]
+
+# Skills discovery (needed for the recall skill):
+[features]
+skills = true

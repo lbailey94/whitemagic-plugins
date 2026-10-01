@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "whitemagic": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+    }
+  }
+}

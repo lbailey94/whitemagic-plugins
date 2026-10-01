@@ -34,10 +34,11 @@ Requirements: Node.js 18+ (for the `npx` launcher). Prefer a native binary?
 |---|---|---|
 | Claude Code | `plugins/whitemagic` | `/plugin marketplace add lbailey94/whitemagic-plugins` |
 | Cursor | `plugins/cursor` (Cursor plugin: mcp.json + rule + skill) | manual `.cursor/mcp.json` today; marketplace submission pending |
+| Codex CLI | `plugins/codex` (config.toml + recall skill) | append the config snippet; copy/install the skill |
 | OpenClaw | `clawhub/whitemagic` | see the ClawHub section below |
-| Codex CLI | planned | — |
-| Gemini CLI / Antigravity | planned | — |
-| VS Code / GitHub Copilot | planned | — |
+| Gemini CLI | `plugins/gemini` (extension: mcp + GEMINI.md + skill) | `gemini extensions link ./plugins/gemini` |
+| Antigravity | `plugins/antigravity` (plugin: mcp_config.json + skill) | copy to `~/.gemini/config/plugins/whitemagic` |
+| VS Code / GitHub Copilot | `plugins/vscode` (mcp.json + agent skill) | copy to `.vscode/mcp.json` + `.github/skills/` |
 
 ### Cursor
 
