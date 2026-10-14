@@ -30,9 +30,8 @@
  *   - INTEGRITY_OK / INTEGRITY_FAILED: integrity-only mode results (no conformance claim).
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import { createHash, createPublicKey, verify as cryptoVerify } from "node:crypto";
-import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const B58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -413,7 +412,19 @@ export async function verifyReceiptBundle(bundle, options = {}) {
 
 // ── CLI Runner ─────────────────────────────────────────────────────────────
 
-if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+function isMainModule() {
+  // Symlink-safe: when run via an npm-installed bin entry (node_modules/.bin
+  // symlink), process.argv[1] is the symlink while import.meta.url is the real
+  // file — compare realpaths, not resolved paths.
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
   const args = process.argv.slice(2);
   let jsonOutput = false;
   let requireAnchor = false;

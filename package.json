@@ -1,12 +1,12 @@
 {
   "name": "whitemagic-plugins",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "WhiteMagic plugins, client adapters, and free offline Continuity Receipt verifier for AI coding agents.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "verify-receipt": "./bin/verify-receipt.mjs",
-    "whitemagic-receipts-mcp": "./bin/receipts-mcp.mjs"
+    "verify-receipt": "bin/verify-receipt.mjs",
+    "whitemagic-receipts-mcp": "bin/receipts-mcp.mjs"
   },
   "files": [
     "bin/",
