@@ -1,0 +1,11 @@
+---
+description: Verify cryptographic continuity receipts and agent execution audit trails with WhiteMagic; prefer explicit wm routes or standalone verifier.
+alwaysApply: false
+---
+
+When reviewing agent action receipts or task proof bundles in this project:
+
+- Verify receipt bundles offline with `wm(route="receipts.verify", args={"bundle": <bundle_json>})`.
+- Emit continuity evidence for current work with `wm(route="receipts.emit", args={"kind": "session"})`.
+- For standalone verification without an MCP session, run `verify-receipt <path/to/bundle.json>`.
+- Verification is always 100% offline, local-first, and zero-telemetry.

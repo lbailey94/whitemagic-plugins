@@ -1,0 +1,16 @@
+{
+  "spec": "continuity-receipt/0.5#session",
+  "receipt_id": "urn:uuid:11111111-2222-4333-8444-555555555555",
+  "kind": "session",
+  "subject": "session:all",
+  "created_at_ms": 1791000000000,
+  "turn_count": 5,
+  "first_turn_ts": 1790000000,
+  "last_turn_ts": 1790999000,
+  "turns_digest": "c0cca16757d6ffc9ea145f78eb548c31bff6b4a703f92644b38abadbb46e6017",
+  "payload_digest": "c0cca16757d6ffc9ea145f78eb548c31bff6b4a703f92644b38abadbb46e6017",
+  "prior_receipt_digest": "genesis",
+  "issuer_did": "did:key:2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12",
+  "content_digest": "5927fc6c1332bd072e4659e1bdab5fd016576cc3db5c34727a64cffc1d5b2004",
+  "signature": "f1defd9e0760643d2337ad285b337814f40f0afa10f5c363c45e6b7cca76dec3dfaa85d113e6d29e69c6baa2a3abe20b7e1c2bf3b433bab8c06e240cf80ce202"
+}

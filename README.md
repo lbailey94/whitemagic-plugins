@@ -91,6 +91,34 @@ clawhub skill publish ./clawhub/whitemagic \
 Wire the local server with `wm setup openclaw --write` (v9.3.1+) or
 `openclaw mcp add whitemagic --command wm --arg serve --arg --profile --arg curated`.
 
+## Free offline receipt verification
+
+This repo ships a free, offline receipt verifier and an MCP server for receipt
+tools — no account, no network, no telemetry.
+
+| Piece | Command / tool | Notes |
+|---|---|---|
+| MCP server | `npx whitemagic-receipts-mcp` (or `node bin/receipts-mcp.mjs`) | Tools: `receipts.verify`, `receipts.inspect`, `receipts.hash`, `receipts.did_resolve` (stdio) |
+| CLI verifier | `node bin/verify-receipt.mjs receipt.json` | `--json`, `-q`, `--require-anchor`, `--revocations <file>` |
+
+Verification modes (reported as `mode` in output):
+
+- `wm-profile-exact` — WhiteMagic emitted continuity receipts
+  (`continuity-receipt/0.5#session` / `#state_transition`) verified against the
+  issuer DID with the kernel's exact `canonical_signing_bytes` recipe. No store
+  access required.
+- `continuity-receipt-ref` — continuity-receipt bundles (spec 0.1–0.6) delegated
+  to the official [`continuity-receipt`](https://www.npmjs.com/package/continuity-receipt)
+  package (optional dependency): full parity with the Python reference —
+  71/71 conformance vectors, zero verdict mismatches.
+- `integrity-only` — fallback when the official package is not installed:
+  Ed25519 signatures + hash-chain linkage only. Verdicts are reported as
+  `INTEGRITY_OK` / `INTEGRITY_FAILED` and never claim conformance.
+
+The per-client `whitemagic-verify` skills teach agents when to reach for these
+surfaces: review task evidence, verify execution receipts, audit signatures, or
+validate proof bundles.
+
 ## Development
 
 ```bash
