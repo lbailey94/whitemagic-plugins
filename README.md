@@ -98,8 +98,13 @@ tools — no account, no network, no telemetry.
 
 | Piece | Command / tool | Notes |
 |---|---|---|
-| MCP server | `npx whitemagic-receipts-mcp` (or `node bin/receipts-mcp.mjs`) | Tools: `receipts.verify`, `receipts.inspect`, `receipts.hash`, `receipts.did_resolve` (stdio) |
-| CLI verifier | `node bin/verify-receipt.mjs receipt.json` | `--json`, `-q`, `--require-anchor`, `--revocations <file>` |
+| MCP server | `npx -y --package whitemagic-plugins whitemagic-receipts-mcp` (or `node bin/receipts-mcp.mjs`) | Tools: `receipts.verify`, `receipts.inspect`, `receipts.hash`, `receipts.did_resolve` (stdio) |
+| CLI verifier | `npx -y --package whitemagic-plugins verify-receipt receipt.json` (or `node bin/verify-receipt.mjs receipt.json`) | `--json`, `-q`, `--require-anchor`, `--revocations <file>` |
+
+> Note: run via `npx --package whitemagic-plugins` (the package is `whitemagic-plugins`;
+> there is no separate `whitemagic-receipts-mcp` package on npm — that name in older
+> docs resolved to a 404). After `npm i -g whitemagic-plugins`, the bare bin names
+> `verify-receipt` / `whitemagic-receipts-mcp` work directly.
 
 Verification modes (reported as `mode` in output):
 
