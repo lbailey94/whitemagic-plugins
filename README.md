@@ -98,7 +98,8 @@ tools — no account, no network, no telemetry.
 
 | Piece | Command / tool | Notes |
 |---|---|---|
-| MCP server | `npx -y --package whitemagic-plugins whitemagic-receipts-mcp` (or `node bin/receipts-mcp.mjs`) | Tools: `receipts.verify`, `receipts.inspect`, `receipts.hash`, `receipts.did_resolve` (stdio) |
+| Receipts MCP server | `npx -y --package whitemagic-plugins whitemagic-receipts-mcp` (or `node bin/receipts-mcp.mjs`) | Tools: `receipts.verify`, `receipts.inspect`, `receipts.hash`, `receipts.did_resolve` (stdio) |
+| Crystals MCP server | `npx -y --package whitemagic-plugins whitemagic-crystals-mcp` (or `node bin/crystals-mcp.mjs`) | Non-custodial Memory Crystals (`wm-crystal/1.0`): `crystal_remember`, `crystal_recall`, `crystal_forget`, `crystal_status` (stdio) |
 | CLI verifier | `npx -y --package whitemagic-plugins verify-receipt receipt.json` (or `node bin/verify-receipt.mjs receipt.json`) | `--json`, `-q`, `--require-anchor`, `--revocations <file>` |
 
 > Note: run via `npx --package whitemagic-plugins` (the package is `whitemagic-plugins`;

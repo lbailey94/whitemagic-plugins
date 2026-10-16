@@ -6,7 +6,8 @@
   "type": "module",
   "bin": {
     "verify-receipt": "bin/verify-receipt.mjs",
-    "whitemagic-receipts-mcp": "bin/receipts-mcp.mjs"
+    "whitemagic-receipts-mcp": "bin/receipts-mcp.mjs",
+    "whitemagic-crystals-mcp": "bin/crystals-mcp.mjs"
   },
   "files": [
     "bin/",
