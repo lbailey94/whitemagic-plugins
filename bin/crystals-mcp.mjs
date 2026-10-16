@@ -23,7 +23,7 @@ import { createInterface } from "node:readline";
 
 const SERVER_INFO = {
   name: "whitemagic-crystals-mcp",
-  version: "1.1.2",
+  version: "1.2.0",
 };
 
 const SPEC = "wm-crystal/1.0";
