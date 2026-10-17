@@ -25,7 +25,7 @@ import {
 
 const SERVER_INFO = {
   name: "whitemagic-receipts-mcp",
-  version: "1.2.0"
+  version: "1.3.0"
 };
 
 const TOOLS = [

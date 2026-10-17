@@ -1,6 +1,6 @@
 {
   "name": "whitemagic-plugins",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "WhiteMagic plugins, client adapters, and free offline Continuity Receipt verifier for AI coding agents.",
   "license": "MIT",
   "type": "module",

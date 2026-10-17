@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "continuity-receipt test fixtures: did:key public identifiers"
+regexTarget = "line"
+regexes = [
+    '''did:key:[0-9a-zA-Z_-]+''',
+    '''did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+''',
+]
