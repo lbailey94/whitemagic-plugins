@@ -21,7 +21,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "check:release-parity": "node scripts/check-release-parity.mjs"
   },
   "optionalDependencies": {
     "continuity-receipt": "^0.1.1"
