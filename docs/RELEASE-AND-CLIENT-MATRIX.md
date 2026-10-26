@@ -7,9 +7,9 @@ This matrix records what a user can choose today from repository evidence. A che
 | Channel | Selector | State | Meaning |
 |---|---|---|---|
 | Source checkout | Git commit SHA | Preview/candidate | Inspect and run a specific checkout. Current integration source is 1.3.0 at `3ccf7a55386da3e8314abed811e40bfcff446eed`. |
-| npm | `whitemagic-plugins@latest` | Registry stable | Scout observation on 2026-10-23: resolves to 1.2.0, gitHead `494595e58e371c50faae015b83a9995b3ad3fef0`. It is behind source 1.3.0. |
-| npm | `whitemagic-plugins@1.3.0` | Unverified | Do not assume it exists. The source checkout alone does not establish publication. |
-| GitHub Releases | latest | None observed | No latest release was present in the scout observation. |
+| npm | `whitemagic-plugins@latest` | Registry stable | Live npm metadata checked 2026-10-26 resolves to 1.2.0, gitHead `494595e58e371c50faae015b83a9995b3ad3fef0`. |
+| npm | `whitemagic-plugins@1.3.0` | Candidate only | Live npm metadata checked 2026-10-26 lists versions through 1.2.0 only; 1.3.0 is not published. The candidate tarball was built and installed locally for acceptance; it was not published. |
+| GitHub Releases | latest | None observed | No release was listed by GitHub on 2026-10-26. |
 | PyPI | `whitemagic==26.0.4` | Retired Gen-1 | Legacy Python package, marked inactive. It is not the Rust WhiteMagic line. |
 
 For a reproducible install, pin a reviewed version or commit. `latest` is a moving selector. Before release, run `npm run check:release-parity`; it packs the exact local candidate, checks the embedded name/version, required adapters, and every declared executable target, and prints npm's tarball integrity and SHA-1. Keep that output with the intended immutable Git commit. The check does not publish, inspect marketplace acceptance, or prove registry parity. Registry parity requires comparing the downloaded tarball's integrity, embedded metadata, file list, and executables against this candidate.
