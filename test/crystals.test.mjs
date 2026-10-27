@@ -59,6 +59,16 @@ test("whitemagic-crystals-mcp executable starts through an npm-style symlink", (
   }
 });
 
+test("crystal helpers can be imported from a stdin-launched caller", () => {
+  const moduleUrl = new URL("../bin/crystals-mcp.mjs", import.meta.url).href;
+  const child = spawnSync(process.execPath, ["--input-type=module", "-"], {
+    input: `import { processMessage } from ${JSON.stringify(moduleUrl)};\nconsole.log(JSON.stringify(await processMessage({jsonrpc:'2.0',id:1,method:'tools/list'})));\n`,
+    encoding: "utf8",
+  });
+  assert.equal(child.status, 0, child.stderr);
+  assert.equal(JSON.parse(child.stdout).result.tools.length, 6);
+});
+
 test("crystal_remember -> crystal_verify_third_party (L5) -> crystal_recall -> crystal_forget -> crystal_status lifecycle", async () => {
   const dir = mkdtempSync(join(tmpdir(), "wm-crystals-mcp-test-"));
   try {

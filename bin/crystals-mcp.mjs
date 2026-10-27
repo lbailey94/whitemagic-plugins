@@ -983,7 +983,13 @@ export async function processMessage(msg) {
   };
 }
 
-if (process.argv[1] && pathToFileURL(realpathSync(process.argv[1])).href === import.meta.url) {
+let isExecutableEntrypoint = false;
+try {
+  isExecutableEntrypoint = Boolean(process.argv[1]) && pathToFileURL(realpathSync(process.argv[1])).href === import.meta.url;
+} catch {
+  // Library callers such as `node -` need no resolvable executable path.
+}
+if (isExecutableEntrypoint) {
   const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: false });
   let chain = Promise.resolve();
   rl.on("line", (line) => {
