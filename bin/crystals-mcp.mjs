@@ -25,10 +25,11 @@ import {
   sign as cryptoSign,
   verify as cryptoVerify,
 } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
+import { pathToFileURL } from "node:url";
 
 const SERVER_INFO = {
   name: "whitemagic-crystals-mcp",
@@ -982,7 +983,13 @@ export async function processMessage(msg) {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+let isExecutableEntrypoint = false;
+try {
+  isExecutableEntrypoint = Boolean(process.argv[1]) && pathToFileURL(realpathSync(process.argv[1])).href === import.meta.url;
+} catch {
+  // Library callers such as `node -` need no resolvable executable path.
+}
+if (isExecutableEntrypoint) {
   const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: false });
   let chain = Promise.resolve();
   rl.on("line", (line) => {

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import {
@@ -34,6 +35,38 @@ test("whitemagic-crystals-mcp exposes 6 annotated tools in tools/list", async ()
   assert.equal(recallTool.annotations.readOnlyHint, true);
   const l5Tool = TOOLS.find((t) => t.name === "crystal_verify_third_party");
   assert.equal(l5Tool.annotations.readOnlyHint, true);
+});
+
+test("whitemagic-crystals-mcp executable starts through an npm-style symlink", () => {
+  const dir = mkdtempSync(join(tmpdir(), "wm-crystals-mcp-cli-"));
+  const link = join(dir, "whitemagic-crystals-mcp");
+  symlinkSync(new URL("../bin/crystals-mcp.mjs", import.meta.url), link);
+  try {
+    const child = spawnSync(process.execPath, [link], {
+      input: [
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2024-11-05", capabilities: {}, clientInfo: { name: "test", version: "1" } } }),
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+        "",
+      ].join("\n"),
+      encoding: "utf8",
+    });
+    assert.equal(child.status, 0, child.stderr);
+    const replies = child.stdout.trim().split("\n").map((line) => JSON.parse(line));
+    assert.equal(replies[0].result.serverInfo.version, "1.3.0");
+    assert.equal(replies[1].result.tools.length, 6);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("crystal helpers can be imported from a stdin-launched caller", () => {
+  const moduleUrl = new URL("../bin/crystals-mcp.mjs", import.meta.url).href;
+  const child = spawnSync(process.execPath, ["--input-type=module", "-"], {
+    input: `import { processMessage } from ${JSON.stringify(moduleUrl)};\nconsole.log(JSON.stringify(await processMessage({jsonrpc:'2.0',id:1,method:'tools/list'})));\n`,
+    encoding: "utf8",
+  });
+  assert.equal(child.status, 0, child.stderr);
+  assert.equal(JSON.parse(child.stdout).result.tools.length, 6);
 });
 
 test("crystal_remember -> crystal_verify_third_party (L5) -> crystal_recall -> crystal_forget -> crystal_status lifecycle", async () => {
