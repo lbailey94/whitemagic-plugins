@@ -3,14 +3,12 @@
 
 [mcp_servers.whitemagic]
 command = "npx"
-args = ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+args = ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
 startup_timeout_sec = 30
 
 # Native binary alternative:
 # [mcp_servers.whitemagic]
-# command = "wm"
+# command = "/absolute/path/to/whitemagic-gen2/bin/wm" # Gen2 9.3.4
 # args = ["serve", "--profile", "curated"]
 
-# Skills discovery (needed for the recall skill):
-[features]
-skills = true
+# User skills: ~/.agents/skills (no [features] skills toggle required).

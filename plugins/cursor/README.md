@@ -23,7 +23,7 @@ same server and rule.
      "mcpServers": {
        "whitemagic": {
          "command": "npx",
-         "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+         "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
        }
      }
    }
@@ -40,8 +40,12 @@ the MCP settings panel.
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL https://www.whitemagic.dev/install.sh?ref=cursor-plugin | sh
-wm connect --write   # wires Cursor (and every other detected client)
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=cursor-plugin' | sh -s -- --version v9.3.4 \
+  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
+gen2_cli="$HOME/.local/share/whitemagic-gen2/bin/wm"
+"$gen2_cli" --version
+"$gen2_cli" setup cursor          # preview the selected store and config
+"$gen2_cli" setup cursor --write  # apply after reviewing the preview
 ```
 
 ## What it adds

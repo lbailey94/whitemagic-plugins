@@ -28,7 +28,7 @@ Add the server to `~/.gemini/settings.json` (or a project
   "mcpServers": {
     "whitemagic": {
       "command": "npx",
-      "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+      "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
     }
   }
 }
@@ -40,9 +40,16 @@ Then copy `skills/whitemagic-recall/` into your skills directory and copy the
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL https://www.whitemagic.dev/install.sh?ref=gemini-plugin | sh
-wm setup gemini --write   # writes the Gemini CLI config for you
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=gemini-plugin' | sh -s -- --version v9.3.4 \
+  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
+"$HOME/.local/share/whitemagic-gen2/bin/wm" --version
 ```
+
+For manual configuration, replace `command` with the actual absolute path
+to that Gen2 binary and `args` with `["serve", "--profile", "curated"]`.
+Gen2's `setup` client list does not include Gemini; use the extension or
+manual JSON above. See the root README for Gen3's separate recipe. These
+instructions do not establish an installed Gemini memory round trip.
 
 ## What it adds
 

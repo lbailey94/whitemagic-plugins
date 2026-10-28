@@ -17,7 +17,7 @@ profile config (Command Palette → **MCP: Open User Configuration**):
     "whitemagic": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+      "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
     }
   }
 }
@@ -42,9 +42,15 @@ shows up in the `/` menu as `whitemagic-recall`.
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL https://www.whitemagic.dev/install.sh?ref=vscode-plugin | sh
-wm setup vscode --write   # writes the VS Code MCP config for you
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=vscode-plugin' | sh -s -- --version v9.3.4 \
+  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
+"$HOME/.local/share/whitemagic-gen2/bin/wm" --version
 ```
+
+Replace `command` in the manual MCP JSON above with that binary's actual
+absolute path and `args` with `["serve", "--profile", "curated"]`. Gen2's
+`setup` client list does not include VS Code. See the root README for Gen3's
+separate binary/store/profile recipe.
 
 ## What it adds
 

@@ -13,13 +13,30 @@ binary, no cloud service, no telemetry, MIT.
 /plugin install whitemagic@whitemagic
 ```
 
-The plugin registers the WhiteMagic MCP server (`npx -y whitemagic-mcp serve
+The plugin registers the WhiteMagic MCP server (`npx -y whitemagic-mcp@9.3.4 serve
 --profile curated`) and adds a recall skill that teaches Claude when to use it
 (session continuity, memory search, decisions).
 
-Requirements: Node.js 18+ (for the `npx` launcher). Prefer a native binary?
-`curl -fsSL https://www.whitemagic.dev/install.sh?ref=plugin | sh`, then
-`wm connect` wires every detected client — including Claude Code.
+Requirements: Node.js 18+ (for the `npx` launcher). These adapters pin
+**Gen2 9.3.4**, whose profile is `curated`. For a native installation,
+select 9.3.4 explicitly and use a separate installation directory:
+
+```sh
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=plugin' | sh -s -- --version v9.3.4 \
+  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
+gen2_cli="$HOME/.local/share/whitemagic-gen2/bin/wm"
+"$gen2_cli" --version
+"$gen2_cli" connect          # preview clients, store and config changes
+"$gen2_cli" connect --write  # apply after reviewing the preview
+```
+
+Gen3 is a separate experimental route. Its server uses
+`/absolute/path/to/wm10 --store /absolute/path/to/separate-store serve --profile cyberbrain`
+(or `full`); it has no `connect` or `setup` command and does not accept the
+Gen2 `curated` profile. `grimoire --plan` prints its client recipe and may
+initialize the explicitly selected store. Replace paths in client JSON/TOML
+with actual absolute paths; `$HOME` is not expanded there. Select a separate
+store when evaluating a different generation.
 
 ## What it adds
 
@@ -50,7 +67,7 @@ Add the server to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json`
   "mcpServers": {
     "whitemagic": {
       "command": "npx",
-      "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+      "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
     }
   }
 }
@@ -88,8 +105,11 @@ clawhub skill publish ./clawhub/whitemagic \
   --topics memory,continuity,mcp,recall,provenance
 ```
 
-Wire the local server with `wm setup openclaw --write` (v9.3.1+) or
-`openclaw mcp add whitemagic --command wm --arg serve --arg --profile --arg curated`.
+For the pinned Gen2 native binary above, `"$gen2_cli" setup openclaw` previews
+configuration and `"$gen2_cli" setup openclaw --write` applies the reviewed
+change. Confirm the executable is 9.3.4 first. The OpenClaw-specific adapter
+is a source recipe; a checked-in adapter does not prove a client handshake
+or memory round trip.
 
 ## Free offline receipt verification
 
