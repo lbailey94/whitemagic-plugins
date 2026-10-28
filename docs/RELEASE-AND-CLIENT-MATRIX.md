@@ -6,9 +6,9 @@ This matrix records what a user can choose today from repository evidence. A che
 
 | Channel | Selector | State | Meaning |
 |---|---|---|---|
-| Source checkout | Git commit SHA | Preview/candidate | Inspect and run a specific checkout. Current integration source is 1.3.0 at `3ccf7a55386da3e8314abed811e40bfcff446eed`. |
-| npm | `whitemagic-plugins@latest` | Registry stable | Live npm metadata checked 2026-10-26 resolves to 1.2.0, gitHead `494595e58e371c50faae015b83a9995b3ad3fef0`. |
-| npm | `whitemagic-plugins@1.3.0` | Candidate only | Live npm metadata checked 2026-10-26 lists versions through 1.2.0 only; 1.3.0 is not published. The candidate tarball was built and installed locally for acceptance; it was not published. |
+| Source checkout | Git commit SHA | Source | Record `git rev-parse HEAD`. The setup corrections after `0dbc032cc67642d8de1b02e0826f44a356cbfe46` are newer than the published 1.3.0 tarball; matching package versions do not establish byte parity. |
+| npm | `whitemagic-plugins@latest` | Registry stable | Live npm metadata checked 2026-10-28 resolves to 1.3.0. `latest` can move; use the exact version for reproducible installs. |
+| npm | `whitemagic-plugins@1.3.0` | Published | Registry integrity observed 2026-10-28: `sha512-uZnP20oRDKx4Mw96JoyIP1S0FXYYCDCHdqlFPr0bwFJeLblN8mD7coKF0HoE81I1cTamWQzpZ7AlOg9CuTxGEg==`. New source adapters are not silently republished under this immutable version. |
 | GitHub Releases | latest | None observed | No release was listed by GitHub on 2026-10-26. |
 | PyPI | `whitemagic==26.0.4` | Retired Gen-1 | Legacy Python package, marked inactive. It is not the Rust WhiteMagic line. |
 
@@ -22,14 +22,22 @@ For a reproducible install, pin a reviewed version or commit. `latest` is a movi
 | Codex CLI | `plugins/codex/config.toml` and skills | Pin this repo to a reviewed commit when copying files | Instructions only |
 | Cursor | `.cursor/mcp.json`, rules, skills | Manual project/global config; marketplace submission pending | Instructions only |
 | VS Code / Copilot | `.vscode/mcp.json` and `.github/skills/` | Manual copy from `plugins/vscode` | Instructions only |
-| Gemini CLI | `gemini extensions link ./plugins/gemini` | Extension manifest separately references `wm`; public manifest observed at 9.3.4 | Instructions only; no binary/hash/handshake proof |
+| Gemini CLI | `gemini extensions link ./plugins/gemini` | Source extension pins `whitemagic-mcp@9.3.4`, Gen2 `curated` | Instructions only; no installed client round-trip claim |
 | Antigravity | Copy `plugins/antigravity` | Bundled config; external distribution status unverified | Instructions only |
-| OpenClaw | ClawHub skill and local `wm` setup | Skill source in this repo; publication status not established here | Instructions only |
+| OpenClaw | ClawHub skill and explicitly selected Gen2 setup | Skill source in this repo; publication status not established here | Instructions only |
 | Homebrew | `brew install lbailey94/tap/whitemagic` | Repo manifest exists; no current binary/hash/signature/first-run proof in this work | Not qualified |
 | Scoop | `scoop bucket add whitemagic ...; scoop install whitemagic` | Public manifest observed at 9.3.4 for Windows x86_64 | Not qualified |
 | Native installer | `curl -fsSL https://www.whitemagic.dev/install.sh | sh` | Moving hosted installer; pinning and asset proof not captured here | Not qualified |
 
 Before claiming a client journey, attach the exact package or binary version and SHA-256, OS/architecture, client version, install output, MCP initialize/tools result, one useful memory write/read, restart result, and uninstall/rollback result. Stable, preview, and pinned are separate choices: users should be able to select a registry stable release, test a preview from a named immutable commit, or pin an exact package/binary version. Do not label a route stable from source or manifest version alone.
+
+These source adapters use the separate core npm package
+`whitemagic-mcp@9.3.4`, not `whitemagic-plugins` as a memory server. Core npm
+tags observed 2026-10-28 were `latest=9.3.4` and `next=10.6.1`. Gen3 has
+different CLI arguments and profiles; see the root README before replacing
+the pinned Gen2 server. A protocol fixture or a controlled loopback-provider
+client run establishes its named wiring only, not real-provider behavior,
+marketplace acceptance, adoption, or an independent operator.
 
 ## Payment and catalogue boundaries
 

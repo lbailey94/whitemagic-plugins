@@ -27,7 +27,7 @@ plugin package. Restart the agent after copying.
      "mcpServers": {
        "whitemagic": {
          "command": "npx",
-         "args": ["-y", "whitemagic-mcp", "serve", "--profile", "curated"]
+         "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
        }
      }
    }
@@ -48,8 +48,9 @@ plugin package. Restart the agent after copying.
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL https://www.whitemagic.dev/install.sh?ref=antigravity-plugin | sh
-wm connect --write   # wires every detected client, including Antigravity
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=antigravity-plugin' | sh -s -- --version v9.3.4 \
+  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
+"$HOME/.local/share/whitemagic-gen2/bin/wm" --version
 ```
 
 ## What it adds
@@ -60,6 +61,12 @@ wm connect --write   # wires every detected client, including Antigravity
 | `mcp_config.json` | WhiteMagic MCP server (curated profile, stdio) |
 | `skills/whitemagic-recall/SKILL.md` | When/how to recall and persist memory |
 
-Requirements: Node.js 18+ for the `npx` launcher (or the native `wm` binary).
+For manual configuration, use that Gen2 binary's actual absolute path as
+`command` and `["serve", "--profile", "curated"]` as `args`. These are
+supplied adapter recipes: Antigravity CLI and IDE discovery paths,
+handshakes, and round trips need separate checks on the selected version.
+See the root README for Gen3's different commands and profiles.
+
+Requirements: Node.js 18+ for the pinned Gen2 launcher or native 9.3.4.
 
 MIT licensed.

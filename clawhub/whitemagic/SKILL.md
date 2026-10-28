@@ -4,34 +4,36 @@ description: Durable local memory and session continuity for coding agents. Reca
 homepage: https://www.whitemagic.dev/whitemagic/guide
 metadata:
   {
-    "openclaw": { "requires": { "bins": ["wm"] } }
+    "openclaw": { "requires": { "bins": ["wm9"] } }
   }
 ---
 
 # WhiteMagic memory
 
 WhiteMagic is local-first memory and session continuity for coding agents,
-exposed over MCP. A single Rust binary (`wm`) runs a stdio MCP server; memories
+exposed over MCP. A single Rust binary runs a stdio MCP server; memories
 and sessions stay on this machine (no telemetry, nothing leaves the device by
 default). MIT.
 
 ## Install
 
 ```bash
-npm i -g whitemagic-mcp      # provides the `wm` binary
-wm --version                 # expect: wm 9.3.0+
+wm9 --version                 # requires an explicitly selected Gen2 9.3.4 binary
 ```
 
-Native binary alternative: <https://www.whitemagic.dev/whitemagic/guide>.
+Install Gen2 9.3.4 separately as described in the repository README. If it
+is installed under another name, substitute its actual absolute path below.
+The Gen3 experimental `wm`/`wm10` commands and profiles differ.
 
 ## Wire it into OpenClaw
 
 ```bash
-# v9.3.1+: patches ~/.openclaw/openclaw.json (mcp.servers.whitemagic)
-wm setup openclaw --write
+# Preview Gen2 changes, then apply after reviewing the store and config.
+wm9 setup openclaw
+wm9 setup openclaw --write
 
-# works on any build:
-openclaw mcp add whitemagic --command wm --arg serve --arg --profile --arg curated
+# Manual alternative for Gen2 9.3.4:
+openclaw mcp add whitemagic --command wm9 --arg serve --arg --profile --arg curated
 openclaw mcp doctor whitemagic --probe
 ```
 
