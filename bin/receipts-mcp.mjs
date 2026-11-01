@@ -17,6 +17,7 @@
 import { createInterface } from "node:readline";
 import {
   verifyReceiptBundle,
+  evaluateScittProfile,
   officialAvailable,
   canonicalBytes,
   sha256Prefixed,
@@ -94,6 +95,39 @@ const TOOLS = [
         }
       },
       required: ["did"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "receipts.scitt_profile",
+    description:
+      "Evaluate or package a Continuity Receipt (CPR) session bundle or emitted receipt under the IETF SCITT profile " +
+      "(draft-bailey-scitt-agent-session-receipt-00). Computes the RFC 8785 JCS canonical statement digest for COSE_Sign1, " +
+      "extracts or verifies the chain_head commitment against tail truncation and whole-store rollback (Section 6 check order), " +
+      "and reports eligibility under the three normative Consumer Profiles (Section 8).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        bundle: {
+          type: "object",
+          description: "Continuity Receipt bundle or single WhiteMagic emitted receipt object"
+        },
+        anchored_head: {
+          type: "object",
+          description: "Optional off-store anchored chain_head ({ seq, head_digest, task_id }) to check for tail truncation or rollback",
+          properties: {
+            seq: { type: "number" },
+            head_digest: { type: "string" },
+            task_id: { type: "string" }
+          },
+          additionalProperties: true
+        },
+        require_anchor: {
+          type: "boolean",
+          description: "If true, treats unanchored bundles as insufficient evidence (default: false)"
+        }
+      },
+      required: ["bundle"],
       additionalProperties: false
     }
   }
@@ -191,6 +225,24 @@ async function handleToolsCall(name, args) {
             public_key_hex: rawKey.toString("hex"),
             public_key_len: rawKey.length
           }, null, 2)
+        }
+      ]
+    };
+  }
+
+  if (name === "receipts.scitt_profile") {
+    if (!args || !args.bundle) {
+      throw new Error("Missing required argument 'bundle'");
+    }
+    const result = await evaluateScittProfile(args.bundle, {
+      anchoredHead: args.anchored_head || null,
+      requireAnchor: Boolean(args.require_anchor)
+    });
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2)
         }
       ]
     };

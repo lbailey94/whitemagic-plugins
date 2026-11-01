@@ -2,10 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 function runServer(messages, doneId) {
   return new Promise((resolve, reject) => {
-    const proc = spawn(process.execPath, ["bin/receipts-mcp.mjs"], { stdio: ["pipe", "pipe", "pipe"] });
+    const scriptPath = fileURLToPath(new URL("../bin/receipts-mcp.mjs", import.meta.url));
+    const proc = spawn(process.execPath, [scriptPath], { stdio: ["pipe", "pipe", "pipe"] });
     let buf = "";
     const replies = [];
     let finished = false;
@@ -47,16 +49,23 @@ test("receipts-mcp: initialize, list tools, verify a WM emitted fixture", async 
       { jsonrpc: "2.0", method: "notifications/initialized" },
       { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} },
       { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "receipts.verify", arguments: { bundle: wm } } },
+      { jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "receipts.scitt_profile", arguments: { bundle: wm } } },
     ],
-    3
+    4
   );
   const byId = Object.fromEntries(replies.map((r) => [r.id, r]));
   assert.equal(byId[1].result.serverInfo.name, "whitemagic-receipts-mcp");
   const toolNames = byId[2].result.tools.map((t) => t.name);
-  for (const name of ["receipts.verify", "receipts.inspect", "receipts.hash", "receipts.did_resolve"]) {
+  for (const name of ["receipts.verify", "receipts.inspect", "receipts.hash", "receipts.did_resolve", "receipts.scitt_profile"]) {
     assert.ok(toolNames.includes(name), `missing tool ${name}`);
   }
   const content = JSON.parse(byId[3].result.content[0].text);
   assert.equal(content.verdict, "TRUSTED");
   assert.equal(content.mode, "wm-profile-exact");
+
+  const scitt = JSON.parse(byId[4].result.content[0].text);
+  assert.equal(scitt.profile, "draft-bailey-scitt-agent-session-receipt-00");
+  assert.equal(scitt.verdict, "TRUSTED");
+  assert.equal(scitt.first_failure_code, null);
+  assert.ok(scitt.scitt_statement.cose_payload_jcs_digest.startsWith("sha256:"));
 });

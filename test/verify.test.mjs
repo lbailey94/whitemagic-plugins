@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { verifyReceiptBundle, officialAvailable } from "../bin/verify-receipt.mjs";
+import { verifyReceiptBundle, evaluateScittProfile, officialAvailable } from "../bin/verify-receipt.mjs";
 
 const load = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), "utf8"));
 
@@ -68,4 +68,41 @@ test("cr bundle: semantic class (authority expired) needs reference parity", asy
     assert.equal(r.verdict, "INTEGRITY_OK");
     assert.equal(r.conformance_evaluated, false);
   }
+});
+
+test("scitt profile (draft-bailey-scitt-agent-session-receipt-00): Section 6 head commitment & check order", async () => {
+  const bundle = load("./fixtures/cr/01_happy_minimal.json");
+  const baseline = await evaluateScittProfile(bundle);
+  assert.equal(baseline.profile, "draft-bailey-scitt-agent-session-receipt-00");
+  assert.equal(baseline.first_failure_code, null);
+  const headDigest = baseline.chain_head.head_digest;
+  const finalSeq = baseline.chain_head.seq;
+
+  // Matching anchored head -> head_committed_resumption true
+  const committed = await evaluateScittProfile(bundle, {
+    anchoredHead: { seq: finalSeq, head_digest: headDigest, task_id: bundle.task_id }
+  });
+  assert.equal(committed.first_failure_code, null);
+  assert.equal(committed.consumer_profiles.head_committed_resumption, true);
+
+  // Tail truncation (anchored seq beyond bundle length) -> anchored_head_missing
+  const truncated = await evaluateScittProfile(bundle, {
+    anchoredHead: { seq: finalSeq + 1, head_digest: headDigest, task_id: bundle.task_id }
+  });
+  assert.equal(truncated.verdict, "UNTRUSTED");
+  assert.equal(truncated.first_failure_code, "anchored_head_missing");
+
+  // Head digest mismatch (rollback) -> anchored_head_mismatch
+  const rollback = await evaluateScittProfile(bundle, {
+    anchoredHead: { seq: finalSeq, head_digest: "sha256:" + "0".repeat(64), task_id: bundle.task_id }
+  });
+  assert.equal(rollback.verdict, "UNTRUSTED");
+  assert.equal(rollback.first_failure_code, "anchored_head_mismatch");
+
+  // Different chain/task_id -> record_from_other_chain
+  const wrongChain = await evaluateScittProfile(bundle, {
+    anchoredHead: { seq: finalSeq, head_digest: headDigest, task_id: "other-task-id" }
+  });
+  assert.equal(wrongChain.verdict, "UNTRUSTED");
+  assert.equal(wrongChain.first_failure_code, "record_from_other_chain");
 });

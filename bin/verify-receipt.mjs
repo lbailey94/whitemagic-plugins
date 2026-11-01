@@ -410,6 +410,160 @@ export async function verifyReceiptBundle(bundle, options = {}) {
   return integrityVerifyBundle(bundle);
 }
 
+// ── IETF SCITT Agent Session Receipt Profile (draft-bailey-scitt-agent-session-receipt-00) ──
+
+/**
+ * Evaluate or package a CPR session bundle / emitted receipt under the IETF SCITT
+ * payload profile (draft-bailey-scitt-agent-session-receipt-00).
+ *
+ * Enforces the Section 6 normative check order when an anchored/expected chain_head
+ * is supplied:
+ *   1. signature_invalid
+ *   2. anchor_signature_invalid
+ *   3. record_from_other_chain
+ *   4. chain_link_broken
+ *   5. anchored_head_missing (tail truncation detection)
+ *   6. anchored_head_mismatch (whole-store rollback / head divergence detection)
+ */
+export async function evaluateScittProfile(bundle, options = {}) {
+  const baseResult = await verifyReceiptBundle(bundle, {
+    requireAnchor: Boolean(options.requireAnchor),
+    externalRevocations: options.externalRevocations ?? null,
+  });
+
+  if (!bundle || typeof bundle !== "object") {
+    return {
+      profile: "draft-bailey-scitt-agent-session-receipt-00",
+      datatracker_url: "https://datatracker.ietf.org/doc/draft-bailey-scitt-agent-session-receipt/",
+      verdict: "UNTRUSTED",
+      first_failure_code: "malformed_bundle",
+      base_verification: baseResult,
+    };
+  }
+
+  const cBytes = canonicalBytes(bundle);
+  const statementDigest = sha256Prefixed(cBytes);
+
+  const isEmitted = typeof bundle.spec === "string" && WM_EMITTED_SPECS.has(bundle.spec);
+  const receipts = Array.isArray(bundle.receipts) ? bundle.receipts : isEmitted ? [bundle] : [];
+  const finalSeq = isEmitted
+    ? (typeof bundle.store_epoch === "number" ? bundle.store_epoch : 0)
+    : receipts.length - 1;
+
+  let computedHeadDigest = null;
+  if (isEmitted && typeof bundle.content_digest === "string") {
+    computedHeadDigest = `sha256:${bundle.content_digest}`;
+  } else if (receipts.length > 0 && typeof receipts[receipts.length - 1] === "object") {
+    computedHeadDigest = sha256Prefixed(canonicalBytes(unsignedView(receipts[receipts.length - 1])));
+  }
+
+  const anchoredHead = options.anchoredHead || bundle.chain_head || null;
+  const errs = Array.isArray(baseResult.errors) ? baseResult.errors : [];
+
+  // Section 6 normative check order (first failure wins):
+  let firstFailureCode = null;
+  const hasSigErr = errs.some((e) =>
+    ["SIGNATURE_INVALID", "MISSING_SIGNATURE", "MISSING_KEY_DID", "CRYPTO_ERROR", "DIGEST_MISMATCH", "signature_invalid", "bad_signature"].includes(e.code)
+  );
+  const hasAnchorSigErr = errs.some((e) =>
+    ["anchor_invalid", "anchor_signature_invalid", "bad_attestation"].includes(e.code)
+  );
+  const hasChainLinkErr = errs.some((e) =>
+    ["CHAIN_BROKEN", "SEQ_MISMATCH", "INVALID_GENESIS", "chain_link_broken", "seq_gap", "prev_mismatch"].includes(e.code)
+  );
+
+  if (hasSigErr) {
+    firstFailureCode = "signature_invalid";
+  } else if (hasAnchorSigErr) {
+    firstFailureCode = "anchor_signature_invalid";
+  } else if (
+    anchoredHead &&
+    anchoredHead.task_id &&
+    bundle.task_id &&
+    anchoredHead.task_id !== bundle.task_id
+  ) {
+    firstFailureCode = "record_from_other_chain";
+  } else if (hasChainLinkErr) {
+    firstFailureCode = "chain_link_broken";
+  } else if (anchoredHead && typeof anchoredHead.seq === "number") {
+    if (!isEmitted && anchoredHead.seq >= receipts.length) {
+      firstFailureCode = "anchored_head_missing";
+    } else if (isEmitted && anchoredHead.seq > finalSeq) {
+      firstFailureCode = "anchored_head_missing";
+    } else if (anchoredHead.head_digest) {
+      const targetDigest = isEmitted
+        ? computedHeadDigest
+        : sha256Prefixed(canonicalBytes(unsignedView(receipts[anchoredHead.seq])));
+      if (targetDigest !== anchoredHead.head_digest) {
+        firstFailureCode = "anchored_head_mismatch";
+      }
+    }
+  } else if (anchoredHead && anchoredHead.head_digest && anchoredHead.head_digest !== computedHeadDigest) {
+    firstFailureCode = "anchored_head_mismatch";
+  } else if (errs.length > 0) {
+    firstFailureCode = errs[0].code;
+  }
+
+  // Consumer Profiles (Section 8):
+  const cryptoOk =
+    firstFailureCode === null &&
+    (baseResult.verdict === "TRUSTED" ||
+      baseResult.verdict === "PROVISIONAL" ||
+      baseResult.verdict === "INTEGRITY_OK");
+
+  const hasValidHeadCommitment = Boolean(
+    cryptoOk &&
+      anchoredHead &&
+      typeof anchoredHead.head_digest === "string" &&
+      anchoredHead.head_digest === computedHeadDigest
+  );
+
+  let authorityBoundOk = false;
+  if (cryptoOk && !isEmitted && receipts.length > 0) {
+    const firstGrantIdx = receipts.findIndex((r) => r.type === "authority.grant" || r.type === "authority.succession");
+    const firstExecIdx = receipts.findIndex((r) => r.type === "tool.execution" || r.type === "action.execution");
+    authorityBoundOk = firstGrantIdx >= 0 && (firstExecIdx === -1 || firstGrantIdx < firstExecIdx);
+  }
+
+  const anchors = Array.isArray(bundle.anchors) ? bundle.anchors : [];
+  const hasScittReceipt = anchors.some((a) => a && a.type === "scitt.cose_receipt");
+  const regulatedRetentionOk = Boolean(cryptoOk && (anchors.length > 0 || hasScittReceipt));
+
+  let scittVerdict = baseResult.verdict;
+  if (firstFailureCode !== null) {
+    scittVerdict = "UNTRUSTED";
+  }
+
+  return {
+    profile: "draft-bailey-scitt-agent-session-receipt-00",
+    datatracker_url: "https://datatracker.ietf.org/doc/draft-bailey-scitt-agent-session-receipt/",
+    media_type_candidate: "application/agent-session-receipt+json",
+    verdict: scittVerdict,
+    first_failure_code: firstFailureCode,
+    mode: baseResult.mode,
+    scitt_statement: {
+      cose_payload_jcs_digest: statementDigest,
+      cose_payload_bytes_len: cBytes.length,
+      scitt_cose_receipt_attached: hasScittReceipt,
+    },
+    chain_head: {
+      seq: finalSeq,
+      head_digest: computedHeadDigest,
+      record_count: isEmitted ? (bundle.store_record_count ?? 1) : receipts.length,
+      anchored_head_supplied: Boolean(anchoredHead),
+      anchored_head_verified: hasValidHeadCommitment,
+    },
+    consumer_profiles: {
+      head_committed_resumption: hasValidHeadCommitment,
+      authority_bound: authorityBoundOk,
+      regulated_retention: regulatedRetentionOk,
+    },
+    bounded_semantics:
+      "A conforming verifier checks cryptographic signatures, JCS canonical digests, predecessor chain links, and external head anchors; it does not establish physical truth or real-world signer authority.",
+    base_verification: baseResult,
+  };
+}
+
 // ── CLI Runner ─────────────────────────────────────────────────────────────
 
 function isMainModule() {
