@@ -1,7 +1,7 @@
 # Receipt inspection and assurance boundaries
 
-The 1.3.1 source candidate corrects the draft payload inspector's assurance
-labels. It does not replace a published package under an existing version.
+The 1.3.1 release corrects the draft payload inspector's assurance labels. It
+uses a new immutable version rather than replacing a published package.
 
 `receipts.scitt_profile` verifies the underlying receipt using the reported
 verification mode, computes its canonical digest, and compares an optional
@@ -35,10 +35,10 @@ this dispatcher delegates full CPR conformance. Published 0.1.1 accepted signed
 impossible Gregorian dates and is deliberately ineligible. Missing, older,
 unknown and incompatible versions retain explicitly labelled integrity-only
 checking; that mode does not establish full protocol conformance. Its issued_at
-check now rejects calendar overflow and trailing-newline spellings. Upgrade the
-optional package pin only after the separately qualified 0.1.2 artifact is
-published and its exact installed integration is reviewed. Node versions without
-module-URL resolution also take the conservative integrity-only path.
+check now rejects calendar overflow and trailing-newline spellings. The default
+optional package pin is 0.1.2, qualified through the installed package integration
+before this release. Node versions without module-URL resolution also take the
+conservative integrity-only path.
 
 The signed timestamp boundary fixture is copied from the Apache-2.0 CPR test
 vectors, with its source kept in the candidate review packet; the fixture key is
