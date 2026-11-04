@@ -1,0 +1,37 @@
+name: Offline verifier and package checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Require the qualified default reference integration
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { officialAvailable, verifyReceiptBundle } from './bin/verify-receipt.mjs';
+          const configured = JSON.parse(readFileSync('package.json')).optionalDependencies['continuity-receipt'];
+          const installed = JSON.parse(readFileSync('node_modules/continuity-receipt/package.json')).version;
+          assert.equal(installed, configured);
+          assert.equal(officialAvailable(), true);
+          const fixture = JSON.parse(readFileSync('test/fixtures/cr/signed-timestamp-boundaries.json'));
+          for (const [name, verdict] of [['valid_bundle', 'TRUSTED'], ['invalid_bundle', 'UNTRUSTED']]) {
+            const result = await verifyReceiptBundle(fixture[name]);
+            assert.equal(result.mode, 'continuity-receipt-ref');
+            assert.equal(result.verdict, verdict);
+          }
+          console.log(`Qualified default reference ${installed}: valid and impossible-date controls pass`);
+          JS
+      - run: npm test
+      - run: npm run check:release-parity

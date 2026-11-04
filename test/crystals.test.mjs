@@ -52,7 +52,7 @@ test("whitemagic-crystals-mcp executable starts through an npm-style symlink", (
     });
     assert.equal(child.status, 0, child.stderr);
     const replies = child.stdout.trim().split("\n").map((line) => JSON.parse(line));
-    assert.equal(replies[0].result.serverInfo.version, "1.3.0");
+    assert.equal(replies[0].result.serverInfo.version, "1.3.1");
     assert.equal(replies[1].result.tools.length, 6);
   } finally {
     rmSync(dir, { recursive: true, force: true });

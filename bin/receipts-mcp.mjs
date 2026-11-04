@@ -26,7 +26,7 @@ import {
 
 const SERVER_INFO = {
   name: "whitemagic-receipts-mcp",
-  version: "1.3.0"
+  version: "1.3.1"
 };
 
 const TOOLS = [
@@ -101,10 +101,10 @@ const TOOLS = [
   {
     name: "receipts.scitt_profile",
     description:
-      "Evaluate or package a Continuity Receipt (CPR) session bundle or emitted receipt under the IETF SCITT profile " +
-      "(draft-bailey-scitt-agent-session-receipt-00). Computes the RFC 8785 JCS canonical statement digest for COSE_Sign1, " +
-      "extracts or verifies the chain_head commitment against tail truncation and whole-store rollback (Section 6 check order), " +
-      "and reports eligibility under the three normative Consumer Profiles (Section 8).",
+      "Inspect a payload for the individual draft-bailey-scitt-agent-session-receipt-00. " +
+      "Computes a canonical statement digest and compares an optional caller-supplied expected head. " +
+      "In-band heads and attached anchors are declarations. External-anchor authentication, COSE/SCITT proof " +
+      "verification, real-world authority and consumer retention profiles are not evaluated (null results).",
     inputSchema: {
       type: "object",
       properties: {
@@ -112,15 +112,20 @@ const TOOLS = [
           type: "object",
           description: "Continuity Receipt bundle or single WhiteMagic emitted receipt object"
         },
-        anchored_head: {
+        expected_head: {
           type: "object",
-          description: "Optional off-store anchored chain_head ({ seq, head_digest, task_id }) to check for tail truncation or rollback",
+          description: "Expected head from the caller's own policy/state; comparison does not authenticate its source or custody",
           properties: {
-            seq: { type: "number" },
-            head_digest: { type: "string" },
+            seq: { type: "integer", minimum: 0 },
+            head_digest: { type: "string", pattern: "^sha256:[0-9a-f]{64}$" },
             task_id: { type: "string" }
           },
+          required: ["seq", "head_digest"],
           additionalProperties: true
+        },
+        anchored_head: {
+          type: "object",
+          description: "Deprecated alias for expected_head; this input is not an authenticated anchor proof"
         },
         require_anchor: {
           type: "boolean",
@@ -235,7 +240,7 @@ async function handleToolsCall(name, args) {
       throw new Error("Missing required argument 'bundle'");
     }
     const result = await evaluateScittProfile(args.bundle, {
-      anchoredHead: args.anchored_head || null,
+      expectedHead: args.expected_head ?? args.anchored_head ?? null,
       requireAnchor: Boolean(args.require_anchor)
     });
     return {

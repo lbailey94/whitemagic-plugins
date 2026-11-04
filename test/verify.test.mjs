@@ -78,12 +78,14 @@ test("scitt profile (draft-bailey-scitt-agent-session-receipt-00): Section 6 hea
   const headDigest = baseline.chain_head.head_digest;
   const finalSeq = baseline.chain_head.seq;
 
-  // Matching anchored head -> head_committed_resumption true
+  // A caller's expected head can match without authenticating an external anchor.
   const committed = await evaluateScittProfile(bundle, {
     anchoredHead: { seq: finalSeq, head_digest: headDigest, task_id: bundle.task_id }
   });
   assert.equal(committed.first_failure_code, null);
-  assert.equal(committed.consumer_profiles.head_committed_resumption, true);
+  assert.equal(committed.chain_head.expected_head_comparison.matches_current, true);
+  assert.equal(committed.chain_head.anchored_head_verified, null);
+  assert.equal(committed.consumer_profiles.head_committed_resumption, null);
 
   // Tail truncation (anchored seq beyond bundle length) -> anchored_head_missing
   const truncated = await evaluateScittProfile(bundle, {
