@@ -16,7 +16,7 @@
  *                           (optional dependency). Full conformance parity with the
  *                           Python reference implementation.
  *
- *   integrity-only          Fallback when the official package is not installed:
+ *   integrity-only          Fallback when no qualified reference package is available:
  *                           verifies Ed25519 signatures + hash-chain linkage only.
  *                           Policy/semantic conformance is NOT evaluated — verdicts
  *                           are reported as INTEGRITY_OK / INTEGRITY_FAILED so they
@@ -42,7 +42,15 @@ for (let i = 0; i < B58_ALPHABET.length; i++) {
 
 const ED25519_MULTICODEC = Buffer.from([0xed, 0x01]);
 const SPKI_PREFIX_ED25519 = Buffer.from("302a300506032b6570032100", "hex");
-const TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/;
+export function validTimestamp(value) {
+  if (typeof value !== "string") return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?Z$/.exec(value);
+  if (!match || match[0] !== value) return false;
+  const [year, month, day, hour, minute, second] = match.slice(1).map(Number);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return year >= 1 && month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1] && hour <= 23 && minute <= 59 && second <= 59;
+}
 
 // WhiteMagic emitted continuity receipt specs (kernel `receipts.emit`).
 const WM_EMITTED_SPECS = new Set([
@@ -130,8 +138,15 @@ export function unsignedView(receipt) {
 // ── Official continuity-receipt reference (optional dependency) ────────────
 
 let official = null;
+export function qualifiedReferenceVersion(version) {
+  return /^0\.1\.(?:[2-9]|[1-9][0-9]+)$/.test(version);
+}
 try {
-  official = await import("continuity-receipt");
+  const entry = import.meta.resolve("continuity-receipt");
+  const metadata = JSON.parse(readFileSync(new URL("../package.json", entry), "utf8"));
+  // 0.1.1 accepts signed impossible calendar dates. An older/unknown reference
+  // must not earn conformance labels; retain the explicit integrity-only mode.
+  if (qualifiedReferenceVersion(metadata.version)) official = await import("continuity-receipt");
 } catch {
   official = null;
 }
@@ -308,7 +323,7 @@ export function integrityVerifyBundle(bundle) {
     if (r.type === "task.termination") terminated = true;
     if (r.type === "settlement") settled = true;
 
-    if (r.issued_at && !TIMESTAMP_RE.test(r.issued_at)) {
+    if (!validTimestamp(r.issued_at)) {
       errors.push({ code: "INVALID_TIMESTAMP", detail: `Malformed issued_at timestamp '${r.issued_at}'`, receipt_id: rId });
     }
 
