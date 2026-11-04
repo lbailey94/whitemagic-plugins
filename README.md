@@ -116,13 +116,15 @@ or memory round trip.
 This repo ships a free, offline receipt verifier and an MCP server for receipt
 tools — no account, no network, no telemetry.
 
-The 1.3.1 source candidate corrects draft-profile assurance reporting.
+Release 1.3.1 corrects draft-profile assurance reporting.
 `receipts.scitt_profile` compares optional caller expectations and reports
 in-band head/anchor declarations separately. It does not authenticate external
 anchors, verify COSE/SCITT registration, or evaluate retention/authority policy;
 the stronger consumer-profile values are `null` (not evaluated). See
-[the assurance contract](docs/VERIFIER-ASSURANCE.md). Published 1.3.0 remains a
-different artifact until a new version is deliberately released.
+[the assurance contract](docs/VERIFIER-ASSURANCE.md). The default optional
+reference is pinned to qualified `continuity-receipt@0.1.2`; missing or
+unsupported references retain explicit integrity-only checking. Version 1.3.1
+is a new immutable artifact; the older 1.3.0 package is not replaced.
 
 | Piece | Command / tool | Notes |
 |---|---|---|

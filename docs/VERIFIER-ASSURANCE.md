@@ -41,6 +41,6 @@ before this release. Node versions without module-URL resolution also take the
 conservative integrity-only path.
 
 The signed timestamp boundary fixture is copied from the Apache-2.0 CPR test
-vectors, with its source kept in the candidate review packet; the fixture key is
+vectors, with its source kept in the release review packet; the fixture key is
 public and synthetic. It is a regression input, not independently authored
 conformance evidence.
