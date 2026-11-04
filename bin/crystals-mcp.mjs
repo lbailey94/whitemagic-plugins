@@ -33,7 +33,7 @@ import { pathToFileURL } from "node:url";
 
 const SERVER_INFO = {
   name: "whitemagic-crystals-mcp",
-  version: "1.3.0",
+  version: "1.3.1",
 };
 
 const SPEC = "wm-crystal/1.0";

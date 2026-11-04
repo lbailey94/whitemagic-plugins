@@ -410,20 +410,14 @@ export async function verifyReceiptBundle(bundle, options = {}) {
   return integrityVerifyBundle(bundle);
 }
 
-// ── IETF SCITT Agent Session Receipt Profile (draft-bailey-scitt-agent-session-receipt-00) ──
+// ── Individual SCITT Agent Session Receipt draft payload inspection ──
 
 /**
- * Evaluate or package a CPR session bundle / emitted receipt under the IETF SCITT
- * payload profile (draft-bailey-scitt-agent-session-receipt-00).
- *
- * Enforces the Section 6 normative check order when an anchored/expected chain_head
- * is supplied:
- *   1. signature_invalid
- *   2. anchor_signature_invalid
- *   3. record_from_other_chain
- *   4. chain_link_broken
- *   5. anchored_head_missing (tail truncation detection)
- *   6. anchored_head_mismatch (whole-store rollback / head divergence detection)
+ * Inspect a draft payload and compare a caller-supplied expected head.
+ * An in-band chain_head is only a declaration. Neither an expected head nor
+ * an attached anchor authenticates its origin or custody here. This module
+ * does not verify COSE/SCITT proofs or evaluate a consumer's retention policy.
+ * The legacy anchoredHead option remains an alias for expectedHead only.
  */
 export async function evaluateScittProfile(bundle, options = {}) {
   const baseResult = await verifyReceiptBundle(bundle, {
@@ -431,7 +425,7 @@ export async function evaluateScittProfile(bundle, options = {}) {
     externalRevocations: options.externalRevocations ?? null,
   });
 
-  if (!bundle || typeof bundle !== "object") {
+  if (!bundle || typeof bundle !== "object" || Array.isArray(bundle)) {
     return {
       profile: "draft-bailey-scitt-agent-session-receipt-00",
       datatracker_url: "https://datatracker.ietf.org/doc/draft-bailey-scitt-agent-session-receipt/",
@@ -457,8 +451,31 @@ export async function evaluateScittProfile(bundle, options = {}) {
     computedHeadDigest = sha256Prefixed(canonicalBytes(unsignedView(receipts[receipts.length - 1])));
   }
 
-  const anchoredHead = options.anchoredHead || bundle.chain_head || null;
+  const declaredHead = bundle.chain_head ?? null;
+  const expectedHead = options.expectedHead ?? options.anchoredHead ?? null;
   const errs = Array.isArray(baseResult.errors) ? baseResult.errors : [];
+
+  function compareHead(head) {
+    if (head === null) return { status: "not_supplied", matches_current: null };
+    if (!head || typeof head !== "object" || Array.isArray(head) ||
+        !Number.isSafeInteger(head.seq) || head.seq < 0 ||
+        typeof head.head_digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(head.head_digest) ||
+        (head.task_id !== undefined && typeof head.task_id !== "string")) {
+      return { status: "invalid", matches_current: false };
+    }
+    if (head.task_id && bundle.task_id && head.task_id !== bundle.task_id) {
+      return { status: "other_chain", matches_current: false };
+    }
+    if (head.seq > finalSeq) return { status: "missing", matches_current: false };
+    const target = isEmitted
+      ? (head.seq === finalSeq ? computedHeadDigest : null)
+      : (receipts[head.seq] && typeof receipts[head.seq] === "object"
+        ? sha256Prefixed(canonicalBytes(unsignedView(receipts[head.seq]))) : null);
+    if (head.head_digest !== target) return { status: "mismatch", matches_current: false };
+    return { status: "match", matches_current: head.seq === finalSeq };
+  }
+  const declaration = compareHead(declaredHead);
+  const expectedComparison = compareHead(expectedHead);
 
   // Section 6 normative check order (first failure wins):
   let firstFailureCode = null;
@@ -476,29 +493,15 @@ export async function evaluateScittProfile(bundle, options = {}) {
     firstFailureCode = "signature_invalid";
   } else if (hasAnchorSigErr) {
     firstFailureCode = "anchor_signature_invalid";
-  } else if (
-    anchoredHead &&
-    anchoredHead.task_id &&
-    bundle.task_id &&
-    anchoredHead.task_id !== bundle.task_id
-  ) {
+  } else if (expectedComparison.status === "other_chain") {
     firstFailureCode = "record_from_other_chain";
   } else if (hasChainLinkErr) {
     firstFailureCode = "chain_link_broken";
-  } else if (anchoredHead && typeof anchoredHead.seq === "number") {
-    if (!isEmitted && anchoredHead.seq >= receipts.length) {
-      firstFailureCode = "anchored_head_missing";
-    } else if (isEmitted && anchoredHead.seq > finalSeq) {
-      firstFailureCode = "anchored_head_missing";
-    } else if (anchoredHead.head_digest) {
-      const targetDigest = isEmitted
-        ? computedHeadDigest
-        : sha256Prefixed(canonicalBytes(unsignedView(receipts[anchoredHead.seq])));
-      if (targetDigest !== anchoredHead.head_digest) {
-        firstFailureCode = "anchored_head_mismatch";
-      }
-    }
-  } else if (anchoredHead && anchoredHead.head_digest && anchoredHead.head_digest !== computedHeadDigest) {
+  } else if (expectedComparison.status === "invalid") {
+    firstFailureCode = "expected_head_invalid";
+  } else if (expectedComparison.status === "missing") {
+    firstFailureCode = "anchored_head_missing";
+  } else if (expectedComparison.status === "mismatch") {
     firstFailureCode = "anchored_head_mismatch";
   } else if (errs.length > 0) {
     firstFailureCode = errs[0].code;
@@ -511,23 +514,15 @@ export async function evaluateScittProfile(bundle, options = {}) {
       baseResult.verdict === "PROVISIONAL" ||
       baseResult.verdict === "INTEGRITY_OK");
 
-  const hasValidHeadCommitment = Boolean(
-    cryptoOk &&
-      anchoredHead &&
-      typeof anchoredHead.head_digest === "string" &&
-      anchoredHead.head_digest === computedHeadDigest
-  );
-
-  let authorityBoundOk = false;
+  let grantPrecedesExecution = null;
   if (cryptoOk && !isEmitted && receipts.length > 0) {
     const firstGrantIdx = receipts.findIndex((r) => r.type === "authority.grant" || r.type === "authority.succession");
     const firstExecIdx = receipts.findIndex((r) => r.type === "tool.execution" || r.type === "action.execution");
-    authorityBoundOk = firstGrantIdx >= 0 && (firstExecIdx === -1 || firstGrantIdx < firstExecIdx);
+    grantPrecedesExecution = firstGrantIdx >= 0 && firstExecIdx >= 0 && firstGrantIdx < firstExecIdx;
   }
 
   const anchors = Array.isArray(bundle.anchors) ? bundle.anchors : [];
   const hasScittReceipt = anchors.some((a) => a && a.type === "scitt.cose_receipt");
-  const regulatedRetentionOk = Boolean(cryptoOk && (anchors.length > 0 || hasScittReceipt));
 
   let scittVerdict = baseResult.verdict;
   if (firstFailureCode !== null) {
@@ -545,21 +540,33 @@ export async function evaluateScittProfile(bundle, options = {}) {
       cose_payload_jcs_digest: statementDigest,
       cose_payload_bytes_len: cBytes.length,
       scitt_cose_receipt_attached: hasScittReceipt,
+      scitt_cose_receipt_verified: null,
     },
     chain_head: {
       seq: finalSeq,
       head_digest: computedHeadDigest,
       record_count: isEmitted ? (bundle.store_record_count ?? 1) : receipts.length,
-      anchored_head_supplied: Boolean(anchoredHead),
-      anchored_head_verified: hasValidHeadCommitment,
+      declared_head_supplied: declaredHead !== null,
+      declared_head_comparison: declaration,
+      expected_head_supplied: expectedHead !== null,
+      expected_head_comparison: expectedComparison,
+      // Compatibility fields: supplied means caller input, never bundle metadata.
+      anchored_head_supplied: expectedHead !== null,
+      anchored_head_verified: null,
+    },
+    structural_checks: { authority_grant_precedes_execution: grantPrecedesExecution },
+    external_anchor_verification: {
+      status: "not_evaluated",
+      reason: "No authenticated external-anchor proof verifier is implemented.",
     },
     consumer_profiles: {
-      head_committed_resumption: hasValidHeadCommitment,
-      authority_bound: authorityBoundOk,
-      regulated_retention: regulatedRetentionOk,
+      head_committed_resumption: cryptoOk ? null : false,
+      authority_bound: cryptoOk ? null : false,
+      regulated_retention: cryptoOk ? null : false,
     },
+    consumer_profiles_status: "not_evaluated",
     bounded_semantics:
-      "A conforming verifier checks cryptographic signatures, JCS canonical digests, predecessor chain links, and external head anchors; it does not establish physical truth or real-world signer authority.",
+      "Receipt verification and expected-head comparison do not authenticate an external anchor, establish head custody/freshness, bind real-world authority, verify SCITT registration, or qualify a retention policy. Null consumer-profile values mean not evaluated.",
     base_verification: baseResult,
   };
 }

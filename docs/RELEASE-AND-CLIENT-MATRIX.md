@@ -7,6 +7,7 @@ This matrix records what a user can choose today from repository evidence. A che
 | Channel | Selector | State | Meaning |
 |---|---|---|---|
 | Source checkout | Git commit SHA | Source | Record `git rev-parse HEAD`. The setup corrections after `0dbc032cc67642d8de1b02e0826f44a356cbfe46` are newer than the published 1.3.0 tarball; matching package versions do not establish byte parity. |
+| Local package candidate | `whitemagic-plugins@1.3.1` | Unpublished | Includes the draft inspector assurance correction. Build/test/pack this exact candidate before any publish decision; null consumer-profile values mean not evaluated. |
 | npm | `whitemagic-plugins@latest` | Registry stable | Live npm metadata checked 2026-10-28 resolves to 1.3.0. `latest` can move; use the exact version for reproducible installs. |
 | npm | `whitemagic-plugins@1.3.0` | Published | Registry integrity observed 2026-10-28: `sha512-uZnP20oRDKx4Mw96JoyIP1S0FXYYCDCHdqlFPr0bwFJeLblN8mD7coKF0HoE81I1cTamWQzpZ7AlOg9CuTxGEg==`. New source adapters are not silently republished under this immutable version. |
 | GitHub Releases | latest | None observed | No release was listed by GitHub on 2026-10-26. |
