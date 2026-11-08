@@ -7,6 +7,7 @@ description: Recall durable project memory and session continuity with WhiteMagi
 
 The `wm` MCP meta-tool is the only entry point. Prefer explicit routes.
 
+- Fast Ecosystem Pre-Flight Brief (repos, sessions, board, VPS, continuity in `<2s`): run `/home/lucas/.local/bin/wm-preflight-brief` (or read `/home/lucas/SharedWorkspace/PREFLIGHT_BRIEF.md`)
 - Recent session state: `wm(route="session.continuity", args={"n": 5})`
 - Search memory: `wm(route="memory.search", args={"query": "..."})`
 - Hybrid recall (better for concepts): `wm(route="memory.hybrid_recall", args={"query": "..."})`
