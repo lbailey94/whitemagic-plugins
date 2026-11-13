@@ -28,15 +28,16 @@ For a reproducible install, pin a reviewed version or commit. `latest` is a movi
 | OpenClaw | ClawHub skill and explicitly selected Gen2 setup | Skill source in this repo; publication status not established here | Instructions only |
 | Homebrew | `brew install lbailey94/tap/whitemagic` | Repo manifest exists; no current binary/hash/signature/first-run proof in this work | Not qualified |
 | Scoop | `scoop bucket add whitemagic ...; scoop install whitemagic` | Public manifest observed at 9.3.4 for Windows x86_64 | Not qualified |
-| Native installer | `curl -fsSL https://www.whitemagic.dev/install.sh | sh` | Moving hosted installer; pinning and asset proof not captured here | Not qualified |
+| Native installer | `curl -fsSL https://www.whitemagic.dev/install.sh | sh` | Hosted default follows the current whitemagic.dev install pin, which is separate from this repo's 9.3.4 adapter pin | Not qualified |
 
 Before claiming a client journey, attach the exact package or binary version and SHA-256, OS/architecture, client version, install output, MCP initialize/tools result, one useful memory write/read, restart result, and uninstall/rollback result. Stable, preview, and pinned are separate choices: users should be able to select a registry stable release, test a preview from a named immutable commit, or pin an exact package/binary version. Do not label a route stable from source or manifest version alone.
 
 These source adapters use the separate core npm package
-`whitemagic-mcp@9.3.4`, not `whitemagic-plugins` as a memory server. Core npm
-tags observed 2026-10-28 were `latest=9.3.4` and `next=10.6.1`. Gen3 has
-different CLI arguments and profiles; see the root README before replacing
-the pinned Gen2 server. A protocol fixture or a controlled loopback-provider
+`whitemagic-mcp@9.3.4`, not `whitemagic-plugins` as a memory server. That pin
+is the qualified Gen2 `curated` line. Core npm tags observed 2026-11-13 are
+`latest=11.2.1` and `next=10.7.1`; those tags are not what these adapters
+launch. Gen3 has different CLI arguments and profiles; see the root README
+before replacing the pinned Gen2 server. A protocol fixture or a controlled loopback-provider
 client run establishes its named wiring only, not real-provider behavior,
 marketplace acceptance, adoption, or an independent operator.
 
