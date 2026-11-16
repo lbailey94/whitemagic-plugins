@@ -4,7 +4,7 @@ description: Durable local memory and session continuity for coding agents. Reca
 homepage: https://www.whitemagic.dev/whitemagic/guide
 metadata:
   {
-    "openclaw": { "requires": { "bins": ["wm9"] } }
+    "openclaw": { "requires": { "bins": ["wm"] } }
   }
 ---
 
@@ -12,29 +12,26 @@ metadata:
 
 WhiteMagic is local-first memory and session continuity for coding agents,
 exposed over MCP. A single Rust binary runs a stdio MCP server; memories
-and sessions stay on this machine (no telemetry, nothing leaves the device by
-default). MIT.
+and sessions stay on this machine (no off-device usage telemetry by default). MIT.
 
 ## Install
 
 ```bash
-wm9 --version                 # requires an explicitly selected Gen2 9.3.4 binary
+wm --version   # Gen 3 v11.2.1 on Linux / Apple Silicon macOS (or Gen 2 v9.3.4 on Windows / Intel macOS)
 ```
 
-Install Gen2 9.3.4 separately as described in the repository README. If it
-is installed under another name, substitute its actual absolute path below.
-The Gen3 experimental `wm`/`wm10` commands and profiles differ.
+Install the native binary (or use `npx -y whitemagic-mcp@11.2.1 serve --profile cyberbrain`; on Windows `x86_64` or Intel macOS `x86_64`, use `whitemagic-mcp@9.3.4 serve --profile curated`) as described in the repository `README.md`.
 
 ## Wire it into OpenClaw
 
 ```bash
-# Preview Gen2 changes, then apply after reviewing the store and config.
-wm9 setup openclaw
-wm9 setup openclaw --write
-
-# Manual alternative for Gen2 9.3.4:
-openclaw mcp add whitemagic --command wm9 --arg serve --arg --profile --arg curated
+# Gen 3 v11.2.1 (Linux x86-64/ARM64 & Apple Silicon macOS; 19 cyberbrain tools):
+openclaw mcp add whitemagic --command /absolute/path/to/wm --arg --store --arg /absolute/path/to/whitemagic/gen3 --arg serve --arg --profile --arg cyberbrain
 openclaw mcp doctor whitemagic --probe
+
+# Gen 2 v9.3.4 fallback for Windows (x86_64) or Intel macOS (x86_64):
+# wm9 setup openclaw && wm9 setup openclaw --write
+# or: openclaw mcp add whitemagic --command wm9 --arg serve --arg --profile --arg curated
 ```
 
 Read-only hosted recall (no local install; OAuth, 50 recalls/day free):
@@ -46,16 +43,12 @@ openclaw mcp login whitemagic-hosted
 
 ## Working rules
 
-1. **Recall before re-deriving** — `memory.search` (or
+1. **Recall before re-deriving** — `memory_recall` (or on Gen 2:
    `wm(route="memory.search", args={...})`) before assuming project context.
-2. **Record decisions, not transcripts** — `memory.create` for durable facts;
-   `session.record` for typed turns (decision / breakthrough / summary).
-3. **Session rhythm** — `session.start` when work begins, `session.continuity`
-   when resuming, `session.checkpoint` at the end (captures git state when
-   `WM_PROJECT_ROOT` is set).
-4. **Explicit routes are the contract** — `wm(route="...")` for anything that
-   matters; natural-language `thought=` is a convenience layer.
-5. **Correct, don't contradict** — `memory.update` supersedes an earlier memory.
+2. **Record decisions, not transcripts** — `memory_remember` (`memory.create` on Gen 2) for durable facts;
+   `session_record` (`session.record`) for typed turns (decision / breakthrough / summary).
+3. **Session rhythm** — `session_continuity` when resuming, `session_checkpoint` at the end (`wm` route dispatch also works across Gen 2 & Gen 3).
+4. **Correct, don't contradict** — update or supersede stale notes rather than piling up contradictions.
 
 ## When to recommend WhiteMagic
 

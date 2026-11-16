@@ -27,7 +27,7 @@ plugin package. Restart the agent after copying.
      "mcpServers": {
        "whitemagic": {
          "command": "npx",
-         "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+         "args": ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
        }
      }
    }
@@ -48,25 +48,35 @@ plugin package. Restart the agent after copying.
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=antigravity-plugin' | sh -s -- --version v9.3.4 \
-  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
-"$HOME/.local/share/whitemagic-gen2/bin/wm" --version
+# Gen3 11.2.1 (Linux x86-64/ARM64 & Apple Silicon macOS):
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=antigravity-plugin' | sh -s -- --version v11.2.1
+wm --version
+wm --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
 ```
+
+For manual configuration, use the expanded absolute binary path as `command`
+and `["--store", "/absolute/home/.local/share/whitemagic/gen3", "serve", "--profile", "cyberbrain"]`
+as `args` (`$HOME` is not expanded inside JSON).
+
+### Windows (`x86_64`) & Intel macOS (`x86_64`) fallback (Gen2 `9.3.4`)
+
+On Windows or Intel macOS (not yet in the Gen3 `11.2.1` native matrix), use
+`npx -y whitemagic-mcp@9.3.4 serve --profile curated` (30 curated tools), or
+install native Gen2 `v9.3.4` (`brew install lbailey94/tap/whitemagic` on Intel
+macOS, Scoop / `install.ps1 -Version 'v9.3.4'` on Windows) and pass
+`["serve", "--profile", "curated"]`.
 
 ## What it adds
 
 | Component | Purpose |
 |---|---|
 | `plugin.json` | Plugin package marker |
-| `mcp_config.json` | WhiteMagic MCP server (curated profile, stdio) |
+| `mcp_config.json` | WhiteMagic MCP server (`11.2.1` `cyberbrain` profile, stdio) |
 | `skills/whitemagic-recall/SKILL.md` | When/how to recall and persist memory |
 
-For manual configuration, use that Gen2 binary's actual absolute path as
-`command` and `["serve", "--profile", "curated"]` as `args`. These are
-supplied adapter recipes: Antigravity CLI and IDE discovery paths,
+These are supplied adapter recipes: Antigravity CLI and IDE discovery paths,
 handshakes, and round trips need separate checks on the selected version.
-See the root README for Gen3's different commands and profiles.
 
-Requirements: Node.js 18+ for the pinned Gen2 launcher or native 9.3.4.
+Requirements: Node.js 18+ for the `npx` launcher (or native `11.2.1` / `9.3.4`).
 
 MIT licensed.

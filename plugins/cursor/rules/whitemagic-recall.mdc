@@ -3,15 +3,13 @@ description: Recall durable project memory and session continuity with WhiteMagi
 alwaysApply: false
 ---
 
-When this project uses WhiteMagic (the `wm` MCP server):
+When this project uses WhiteMagic (the local MCP server):
 
 - Before answering "what do we know / what was decided / where were we", call
-  `wm(route="session.continuity", args={"n": 5})`.
-- Search durable memory with `wm(route="memory.search", args={"query": "..."})`;
-  use `wm(route="memory.hybrid_recall", args={"query": "..."})` for concepts.
+  `session_continuity` (or on Gen 2 `v9.3.4` fallback: `wm(route="session.continuity", args={"n": 5})`).
+- Search durable memory with `memory_recall(query="...")` (Gen 2: `wm(route="memory.search", args={"query": "..."})`).
 - Persist decisions with
-  `wm(route="memory.create", args={"content": "...", "importance": 0.8, "tags": ["decision"]})`.
-- Prefer explicit `route=` over natural-language routing;
-  `wm(route="tools.list")` discovers the surface.
+  `memory_remember(content="...", importance=0.8, tags=["decision"])` (Gen 2: `wm(route="memory.create", args=...)`) and record checkpoints with `session_checkpoint`.
+- `wm` remains available alongside the 19 `cyberbrain` MCP tools for explicit route dispatch.
 - All memory stays local by default; never send memory content to third-party
   services.

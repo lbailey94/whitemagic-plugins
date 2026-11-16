@@ -3,7 +3,7 @@
     "whitemagic": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+      "args": ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
     }
   }
 }

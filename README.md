@@ -13,36 +13,51 @@ binary, no cloud service, no telemetry, MIT.
 /plugin install whitemagic@whitemagic
 ```
 
-The plugin registers the WhiteMagic MCP server (`npx -y whitemagic-mcp@9.3.4 serve
---profile curated`) and adds a recall skill that teaches Claude when to use it
-(session continuity, memory search, decisions).
+The plugin registers the WhiteMagic MCP server (`npx -y whitemagic-mcp@11.2.1 serve
+--profile cyberbrain`, 19 tools) and adds a recall skill that teaches Claude when to
+use it (session continuity, memory recall, decisions).
 
-Requirements: Node.js 18+ (for the `npx` launcher). These adapters pin
-**Gen2 9.3.4**, whose profile is `curated`. For a native installation,
-select 9.3.4 explicitly and use a separate installation directory:
+Requirements: Node.js 18+ (for the `npx` launcher). These adapters target
+**Gen3 11.2.1** (`cyberbrain` profile) on Linux (`x86_64`, `aarch64`) and Apple
+Silicon macOS (`aarch64`). For a native installation:
 
 ```sh
-curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=plugin' | sh -s -- --version v9.3.4 \
-  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
-gen2_cli="$HOME/.local/share/whitemagic-gen2/bin/wm"
-"$gen2_cli" --version
-"$gen2_cli" connect          # preview clients, store and config changes
-"$gen2_cli" connect --write  # apply after reviewing the preview
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=plugin' | sh -s -- --version v11.2.1
+wm --version
+wm --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
 ```
 
-Gen3 is a separate experimental route. Its server uses
-`/absolute/path/to/wm10 --store /absolute/path/to/separate-store serve --profile cyberbrain`
-(or `full`); it has no `connect` or `setup` command and does not accept the
-Gen2 `curated` profile. `grimoire --plan` prints its client recipe and may
-initialize the explicitly selected store. Replace paths in client JSON/TOML
-with actual absolute paths; `$HOME` is not expanded there. Select a separate
-store when evaluating a different generation.
+In manual client JSON/TOML for a native Gen3 binary, pass an explicit expanded
+absolute path to both the binary and store (because `$HOME` is not expanded there):
+
+```json
+{
+  "command": "/absolute/home/.local/bin/wm",
+  "args": ["--store", "/absolute/home/.local/share/whitemagic/gen3", "serve", "--profile", "cyberbrain"]
+}
+```
+
+Gen3 has no `connect` or `setup` subcommand and does not use the Gen2 `curated`
+profile. Use `wm grimoire --plan` (or `wm serve --help`) to inspect paths and
+profiles; one store should have one writer at a time.
+
+### Windows (`x86_64`) & Intel macOS (`x86_64`) fallback (Gen2 `9.3.4`)
+
+Gen3 `11.2.1` does not currently publish native Windows or Intel macOS binaries.
+On those platforms, pin **Gen2 `9.3.4`** (`--profile curated`, 30 curated tools):
+
+- `npx`: `npx -y whitemagic-mcp@9.3.4 serve --profile curated`
+- Intel macOS native: `curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=plugin' | sh -s -- --version v9.3.4` (or `brew install lbailey94/tap/whitemagic`)
+- Windows PowerShell: `& ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/lbailey94/whitemagic/v9.3.4/scripts/install.ps1'))) -Version 'v9.3.4' -Dir (Join-Path $env:LOCALAPPDATA 'WhiteMagic\bin') -Ref 'plugin'` (or `scoop bucket add whitemagic https://github.com/lbailey94/scoop-whitemagic && scoop install whitemagic`)
+
+On Gen2 `9.3.4`, `wm connect` / `wm connect --write` preview and write client configs
+with `["serve", "--profile", "curated"]`. Keep Gen2 and Gen3 stores separate.
 
 ## What it adds
 
 | Component | Purpose |
 |---|---|
-| `.mcp.json` | WhiteMagic MCP server (curated profile) |
+| `.mcp.json` | WhiteMagic MCP server (`whitemagic-mcp@11.2.1`, `cyberbrain` profile) |
 | `skills/whitemagic-recall` | When/how to recall and persist project memory |
 
 ## Clients
@@ -67,7 +82,7 @@ Add the server to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json`
   "mcpServers": {
     "whitemagic": {
       "command": "npx",
-      "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+      "args": ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
     }
   }
 }
@@ -105,9 +120,10 @@ clawhub skill publish ./clawhub/whitemagic \
   --topics memory,continuity,mcp,recall,provenance
 ```
 
-For the pinned Gen2 native binary above, `"$gen2_cli" setup openclaw` previews
-configuration and `"$gen2_cli" setup openclaw --write` applies the reviewed
-change. Confirm the executable is 9.3.4 first. The OpenClaw-specific adapter
+For native Gen3 (`v11.2.1`), configure OpenClaw with the expanded store and
+`--profile cyberbrain`; on Windows or Intel macOS (`v9.3.4`), `"$gen2_cli" setup openclaw`
+previews configuration and `"$gen2_cli" setup openclaw --write` applies the
+reviewed change. Confirm the executable version first. The OpenClaw-specific adapter
 is a source recipe; a checked-in adapter does not prove a client handshake
 or memory round trip.
 

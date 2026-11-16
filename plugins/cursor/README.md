@@ -23,7 +23,7 @@ same server and rule.
      "mcpServers": {
        "whitemagic": {
          "command": "npx",
-         "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+         "args": ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
        }
      }
    }
@@ -40,19 +40,24 @@ the MCP settings panel.
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=cursor-plugin' | sh -s -- --version v9.3.4 \
-  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
-gen2_cli="$HOME/.local/share/whitemagic-gen2/bin/wm"
-"$gen2_cli" --version
-"$gen2_cli" setup cursor          # preview the selected store and config
-"$gen2_cli" setup cursor --write  # apply after reviewing the preview
+# Gen3 11.2.1 (Linux x86-64/ARM64 & Apple Silicon macOS):
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=cursor-plugin' | sh -s -- --version v11.2.1
+wm --version
+wm --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
 ```
+
+Set `command` to the expanded absolute binary path and `args` to
+`["--store", "/absolute/home/.local/share/whitemagic/gen3", "serve", "--profile", "cyberbrain"]`.
+
+On Windows (`x86_64`) or Intel macOS (`x86_64`), use Gen2 `9.3.4` instead
+(`npx -y whitemagic-mcp@9.3.4 serve --profile curated`, or native `v9.3.4` where
+`wm setup cursor` applies). See the root `README.md` for Windows / Intel macOS commands.
 
 ## What it adds
 
 | Component | Purpose |
 |---|---|
-| `mcp.json` | WhiteMagic MCP server (curated profile, stdio) |
+| `mcp.json` | WhiteMagic MCP server (`11.2.1` `cyberbrain` profile, stdio) |
 | `rules/whitemagic-recall.mdc` | Recall-first behavior + explicit `wm` routes |
 | `skills/whitemagic-recall/SKILL.md` | When/how to recall and persist memory |
 

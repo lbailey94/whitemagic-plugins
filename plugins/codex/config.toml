@@ -3,12 +3,15 @@
 
 [mcp_servers.whitemagic]
 command = "npx"
-args = ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+args = ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
 startup_timeout_sec = 30
 
-# Native binary alternative:
+# Native Gen3 11.2.1 binary alternative (Linux / Apple Silicon macOS):
 # [mcp_servers.whitemagic]
-# command = "/absolute/path/to/whitemagic-gen2/bin/wm" # Gen2 9.3.4
-# args = ["serve", "--profile", "curated"]
+# command = "/absolute/path/to/wm"
+# args = ["--store", "/absolute/path/to/whitemagic/gen3", "serve", "--profile", "cyberbrain"]
+#
+# Windows (x86_64) & Intel macOS (x86_64) fallback (Gen2 9.3.4):
+# args = ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
 
 # User skills: ~/.agents/skills (no [features] skills toggle required).

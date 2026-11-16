@@ -13,22 +13,23 @@ Append to `~/.codex/config.toml` (or a trusted project's
 ```toml
 [mcp_servers.whitemagic]
 command = "npx"
-args = ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+args = ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
 startup_timeout_sec = 30
 ```
 
-Prefer the native Gen2 binary? Install 9.3.4 into a separate prefix and use
-`command = "/absolute/path/to/whitemagic-gen2/bin/wm"` with
-`args = ["serve", "--profile", "curated"]`:
+Prefer the native Gen3 `11.2.1` binary (Linux / Apple Silicon macOS)? Install
+`v11.2.1` and use expanded absolute paths with `args = ["--store", "/absolute/home/.local/share/whitemagic/gen3", "serve", "--profile", "cyberbrain"]`:
 
 ```bash
-curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=codex-plugin' | sh -s -- --version v9.3.4 \
-  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
-gen2_cli="$HOME/.local/share/whitemagic-gen2/bin/wm"
-"$gen2_cli" --version
-"$gen2_cli" setup codex          # preview the store and config change
-"$gen2_cli" setup codex --write  # apply after reviewing the preview
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=codex-plugin' | sh -s -- --version v11.2.1
+wm --version
+wm --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
 ```
+
+On Windows (`x86_64`) or Intel macOS (`x86_64`), pin Gen2 `9.3.4` instead:
+`args = ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]` (or
+install native `v9.3.4`, where `wm setup codex` / `wm setup codex --write`
+apply). See the root `README.md` for Windows PowerShell / Scoop / Homebrew recipes.
 
 Restart Codex after editing the config.
 
@@ -53,11 +54,10 @@ If the installed skill does not appear, restart Codex.
 
 | Component | Purpose |
 |---|---|
-| `[mcp_servers.whitemagic]` | WhiteMagic MCP server (curated profile, stdio) |
+| `[mcp_servers.whitemagic]` | WhiteMagic MCP server (`11.2.1` `cyberbrain` profile, stdio) |
 | `skills/whitemagic-recall/SKILL.md` | When/how to recall and persist project memory |
 
-Requirements: Node.js 18+ for the pinned Gen2 `npx` launcher (or native
-9.3.4). See the root README for Gen3's different command/profile and store.
+Requirements: Node.js 18+ for the `npx` launcher (or native `11.2.1` / Gen2 `9.3.4` fallback on Windows & Intel macOS).
 `codex mcp list` shows configuration; initialization and tool calls need
 separate checks. These adapter recipes do not establish a client round trip.
 

@@ -23,21 +23,23 @@ For a reproducible install, pin a reviewed version or commit. `latest` is a movi
 | Codex CLI | `plugins/codex/config.toml` and skills | Pin this repo to a reviewed commit when copying files | Instructions only |
 | Cursor | `.cursor/mcp.json`, rules, skills | Manual project/global config; marketplace submission pending | Instructions only |
 | VS Code / Copilot | `.vscode/mcp.json` and `.github/skills/` | Manual copy from `plugins/vscode` | Instructions only |
-| Gemini CLI | `gemini extensions link ./plugins/gemini` | Source extension pins `whitemagic-mcp@9.3.4`, Gen2 `curated` | Instructions only; no installed client round-trip claim |
-| Antigravity | Copy `plugins/antigravity` | Bundled config; external distribution status unverified | Instructions only |
-| OpenClaw | ClawHub skill and explicitly selected Gen2 setup | Skill source in this repo; publication status not established here | Instructions only |
-| Homebrew | `brew install lbailey94/tap/whitemagic` | Repo manifest exists; no current binary/hash/signature/first-run proof in this work | Not qualified |
-| Scoop | `scoop bucket add whitemagic ...; scoop install whitemagic` | Public manifest observed at 9.3.4 for Windows x86_64 | Not qualified |
-| Native installer | `curl -fsSL https://www.whitemagic.dev/install.sh | sh` | Hosted default follows the current whitemagic.dev install pin, which is separate from this repo's 9.3.4 adapter pin | Not qualified |
+| Gemini CLI | `gemini extensions link ./plugins/gemini` | Source extension pins `whitemagic-mcp@11.2.1`, Gen3 `cyberbrain` (use `9.3.4` / `curated` on Windows or Intel macOS) | Instructions only; no installed client round-trip claim |
+| Antigravity | Copy `plugins/antigravity` | Bundled config pins `whitemagic-mcp@11.2.1` (`cyberbrain`); external distribution status unverified | Instructions only |
+| OpenClaw | ClawHub skill (`whitemagic-mcp@11.2.1` / Gen2 `9.3.4` fallback) | Skill source in this repo; publication status not established here | Instructions only |
+| Homebrew | `brew install lbailey94/tap/whitemagic` | Formula remains at Gen2 `9.3.4` for Intel macOS (`x86_64`), Apple Silicon, and Linux support | Not qualified |
+| Scoop | `scoop bucket add whitemagic ...; scoop install whitemagic` | Public manifest observed at Gen2 `9.3.4` for Windows `x86_64` | Not qualified |
+| Native installer | `curl -fsSL https://www.whitemagic.dev/install.sh | sh` | Hosted default is Gen3 `v11.2.1` (`cyberbrain`), matching these source adapters (`--version v9.3.4` available for Windows / Intel macOS fallback) | Not qualified |
 
 Before claiming a client journey, attach the exact package or binary version and SHA-256, OS/architecture, client version, install output, MCP initialize/tools result, one useful memory write/read, restart result, and uninstall/rollback result. Stable, preview, and pinned are separate choices: users should be able to select a registry stable release, test a preview from a named immutable commit, or pin an exact package/binary version. Do not label a route stable from source or manifest version alone.
 
-These source adapters use the separate core npm package
-`whitemagic-mcp@9.3.4`, not `whitemagic-plugins` as a memory server. That pin
-is the qualified Gen2 `curated` line. Core npm tags observed 2026-11-13 are
-`latest=11.2.1` and `next=10.7.1`; those tags are not what these adapters
-launch. Gen3 has different CLI arguments and profiles; see the root README
-before replacing the pinned Gen2 server. A protocol fixture or a controlled loopback-provider
+These source adapters launch the separate core npm package
+`whitemagic-mcp@11.2.1` (`serve --profile cyberbrain`, 19 tools), not
+`whitemagic-plugins` as a memory server, on Linux (`x86_64`/`aarch64`) and Apple
+Silicon macOS (`aarch64`). Core npm tags are `latest=11.2.1` and `next=10.7.1`.
+On Windows (`x86_64`) and Intel macOS (`x86_64`), where Gen3 `11.2.1` has no
+native binary assets, use the Gen2 `curated` fallback (`whitemagic-mcp@9.3.4
+serve --profile curated`, 30 tools) and check the root `README.md` before
+mixing stores across generations. A protocol fixture or a controlled loopback-provider
 client run establishes its named wiring only, not real-provider behavior,
 marketplace acceptance, adoption, or an independent operator.
 

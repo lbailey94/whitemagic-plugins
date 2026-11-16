@@ -28,7 +28,7 @@ Add the server to `~/.gemini/settings.json` (or a project
   "mcpServers": {
     "whitemagic": {
       "command": "npx",
-      "args": ["-y", "whitemagic-mcp@9.3.4", "serve", "--profile", "curated"]
+      "args": ["-y", "whitemagic-mcp@11.2.1", "serve", "--profile", "cyberbrain"]
     }
   }
 }
@@ -40,22 +40,24 @@ Then copy `skills/whitemagic-recall/` into your skills directory and copy the
 ### Native binary instead of npx
 
 ```bash
-curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=gemini-plugin' | sh -s -- --version v9.3.4 \
-  --dir "$HOME/.local/share/whitemagic-gen2/bin" --no-path
-"$HOME/.local/share/whitemagic-gen2/bin/wm" --version
+# Gen3 11.2.1 (Linux x86-64/ARM64 & Apple Silicon macOS):
+curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=gemini-plugin' | sh -s -- --version v11.2.1
+wm --version
+wm --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
 ```
 
-For manual configuration, replace `command` with the actual absolute path
-to that Gen2 binary and `args` with `["serve", "--profile", "curated"]`.
-Gen2's `setup` client list does not include Gemini; use the extension or
-manual JSON above. See the root README for Gen3's separate recipe. These
+For manual configuration, set `command` to the expanded absolute binary path
+and `args` to `["--store", "/absolute/home/.local/share/whitemagic/gen3", "serve", "--profile", "cyberbrain"]`.
+On Windows (`x86_64`) or Intel macOS (`x86_64`), use Gen2 `9.3.4` instead:
+`npx -y whitemagic-mcp@9.3.4 serve --profile curated` (or native `v9.3.4` with
+`["serve", "--profile", "curated"]`; see the root `README.md`). These
 instructions do not establish an installed Gemini memory round trip.
 
 ## What it adds
 
 | Component | Purpose |
 |---|---|
-| `gemini-extension.json` | WhiteMagic MCP server (curated profile, stdio) |
+| `gemini-extension.json` | WhiteMagic MCP server (`11.2.1` `cyberbrain` profile, stdio) |
 | `GEMINI.md` | Recall-first context |
 | `skills/whitemagic-recall/SKILL.md` | When/how to recall and persist memory |
 
