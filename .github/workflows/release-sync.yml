@@ -1,0 +1,91 @@
+name: Release Parity Sync (PR)
+
+on:
+  repository_dispatch:
+    types: [whitemagic-release-healthy]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Certified whitemagic-mcp version (e.g. 11.3.0)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-adapters-pr:
+    name: Verify adapter channel parity for certified release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Update whitemagic-mcp adapter pins when version advances
+        env:
+          TARGET_VERSION: ${{ github.event.client_payload.version || github.event.inputs.version }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const target = process.env.TARGET_VERSION;
+          if (!target || !/^\d+\.\d+\.\d+/.test(target)) {
+            console.log('No valid target version provided; skipping rewrite.');
+            process.exit(0);
+          }
+          const files = [
+            'plugins/antigravity/mcp_config.json',
+            'plugins/antigravity/README.md',
+            'plugins/codex/config.toml',
+            'plugins/codex/README.md',
+            'plugins/cursor/mcp.json',
+            'plugins/cursor/README.md',
+            'plugins/gemini/gemini-extension.json',
+            'plugins/gemini/README.md',
+            'plugins/vscode/mcp.json',
+            'plugins/vscode/README.md',
+            'plugins/whitemagic/.mcp.json',
+            'clawhub/whitemagic/SKILL.md',
+            'docs/RELEASE-AND-CLIENT-MATRIX.md',
+            'README.md',
+          ];
+          const re = /whitemagic-mcp@(?!9\.3\.4\b)[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?/g;
+          for (const f of files) {
+            const orig = readFileSync(f, 'utf8');
+            const next = orig.replace(re, `whitemagic-mcp@${target}`);
+            if (next !== orig) {
+              writeFileSync(f, next);
+              console.log('Updated', f);
+            }
+          }
+          JS
+          npm test
+          npm run check:release-parity
+
+      - name: Open or update review PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_VERSION: ${{ github.event.client_payload.version || github.event.inputs.version || 'latest' }}
+        run: |
+          if git diff --quiet; then
+            echo "Adapter channel pins already match ${TARGET_VERSION}."
+            exit 0
+          fi
+          git config user.name "WhiteMagic AI"
+          git config user.email "lbailey94@protonmail.com"
+          BRANCH="chore/sync-whitemagic-${TARGET_VERSION}"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "chore(adapters): pin whitemagic-mcp@${TARGET_VERSION}"
+          git push -f origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore(adapters): pin whitemagic-mcp@${TARGET_VERSION}" \
+            --body "Automated PR updating \`whitemagic-mcp\` Gen3 adapter pins to certified \`${TARGET_VERSION}\` (verified via \`npm test\` and \`check:release-parity\`)." \
+            || gh pr edit "$BRANCH" --title "chore(adapters): pin whitemagic-mcp@${TARGET_VERSION}"
