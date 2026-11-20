@@ -2,29 +2,46 @@
 
 [![whitemagic.agent](https://dmv.agentcommunity.org/badge?id=UNIT-FA2-46DL)](https://dmv.agentcommunity.org/c/UNIT-FA2-46DL/whitemagic)
 
-Claude Code plugin marketplace for [WhiteMagic](https://whitemagic.dev) —
-local-first memory and session continuity for coding agents. One static Rust
-binary, no cloud service, no telemetry, MIT.
+Claude Code plugin marketplace for [WhiteMagic](https://whitemagic.dev),
+a local-first memory and session continuity layer for coding agents. The MCP
+server uses a local Rust binary and keeps its memory store on your device.
 
 ## Install
+
+For the Gen 3 plugin, install Node.js 18+ and make sure `npx` is on PATH. The
+first launch downloads the pinned WhiteMagic binary. Native builds support Linux
+x86-64/ARM64 with glibc 2.39+ and Apple Silicon macOS. On Linux, check
+`getconf GNU_LIBC_VERSION` first. For Windows or Intel macOS, use the
+[Gen 2 fallback](#windows-x86_64--intel-macos-x86_64-fallback-gen2-934).
+
+In Claude Code, run:
 
 ```text
 /plugin marketplace add lbailey94/whitemagic-plugins
 /plugin install whitemagic@whitemagic
 ```
 
+Or run these from a terminal:
+
+```sh
+claude plugin marketplace add lbailey94/whitemagic-plugins
+claude plugin install whitemagic@whitemagic
+claude mcp list
+```
+
+Look for `plugin:whitemagic:whitemagic` with status `Connected`. Then open a new
+Claude Code session and try the [save and recall check](https://www.whitemagic.dev/install#first-memory).
+
 The plugin registers the WhiteMagic MCP server (`npx -y whitemagic-mcp@11.2.1 serve
 --profile cyberbrain`, 19 tools) and adds a recall skill that teaches Claude when to
 use it (session continuity, memory recall, decisions).
 
-Requirements: Node.js 18+ (for the `npx` launcher). These adapters target
-**Gen3 11.2.1** (`cyberbrain` profile) on Linux (`x86_64`, `aarch64`) and Apple
-Silicon macOS (`aarch64`). For a native installation:
+For a native installation without the npm launcher:
 
 ```sh
 curl -fsSL 'https://www.whitemagic.dev/install.sh?ref=plugin' | sh -s -- --version v11.2.1
-wm --version
-wm --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
+"$HOME/.local/bin/wm" --version
+"$HOME/.local/bin/wm" --store "$HOME/.local/share/whitemagic/gen3" grimoire --plan
 ```
 
 In manual client JSON/TOML for a native Gen3 binary, pass an explicit expanded
